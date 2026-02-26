@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:background="@drawable/bg1"
+    android:id="@+id/perfectos">
+
+    <TextView
+        android:id="@+id/tituloperfectosperfectos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:text="Números Perfectos"
+        android:shadowColor="#000000"
+        android:shadowDx="5"
+        android:shadowDy="5"
+        android:shadowRadius="1"
+        android:textAllCaps="true"
+        android:textColor="@color/colorTexto"
+        android:textSize="60sp"
+        />
+
+    <TextView
+        android:id="@+id/Subtituloperfectos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="SubtituloPrimos"
+        android:shadowColor="#000000"
+        android:shadowDx="5"
+        android:shadowDy="5"
+        android:shadowRadius="1"
+        android:textAllCaps="true"
+        android:textColor="@color/colorSubtexto"
+        android:textSize="30sp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/tituloperfectosperfectos"
+        />
+
+    <EditText
+        android:id="@+id/editTextperfectos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:hint="Ingresa un número..."
+        android:textColorHint="@color/black"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/Subtituloperfectos"
+
+        />
+
+    <EditText
+        android:id="@+id/editTextresultadoperfectos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="number"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:layout_below="@id/editTextperfectos"
+
+        />
+
+    <Button
+        android:id="@+id/buttonperfectos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SI ES PERFECTO?"
+        android:textColor="@color/colorTexto"
+        android:textSize="20sp"
+        android:backgroundTint="@color/colorBoton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:layout_below="@id/editTextresultadoperfectos"
+
+        />
+
+    <ImageButton
+        android:id="@+id/imageButtonPerfectosIzquierda"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        android:src="@drawable/flechaizquierda"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="20dp"
+        />
+
+    <ImageButton
+        android:id="@+id/imageButtonPerfectosDerecha"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        android:src="@drawable/flechaderecha"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="20dp"
+        />
+
+
+</RelativeLayout>
