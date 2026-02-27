@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fondo de la página tipo pliegue -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#85FFFFFF" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+    <!-- Línea superior -->
+    <item
+        android:top="28dp"
+        android:left="8dp"
+        android:right="8dp"
+        android:bottom="86dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#AAFFFFFF" />
+            <corners android:radius="3dp" />
+        </shape>
+    </item>
+    <!-- Línea media -->
+    <item
+        android:top="42dp"
+        android:left="8dp"
+        android:right="8dp"
+        android:bottom="72dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#AAFFFFFF" />
+            <corners android:radius="3dp" />
+        </shape>
+    </item>
+    <!-- Línea inferior -->
+    <item
+        android:top="56dp"
+        android:left="8dp"
+        android:right="8dp"
+        android:bottom="58dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#AAFFFFFF" />
+            <corners android:radius="3dp" />
+        </shape>
+    </item>
+</layer-list>

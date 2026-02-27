@@ -44,8 +44,8 @@ public class pantalla_inicio extends AppCompatActivity {
         btnRegistrate.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Creamos el intent para viajar a pantalla_registro
-                Intent intent = new Intent(pantalla_inicio.this, pantalla_registro.class);
+                // Pasamos por la pantalla de carga antes de llegar a pantalla_registro
+                Intent intent = new Intent(pantalla_inicio.this, LoadingActivity.class);
                 startActivity(intent);
             }
         });

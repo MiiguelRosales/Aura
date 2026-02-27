@@ -1,9 +1,11 @@
 package com.example.aura;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -34,6 +36,15 @@ public class pantalla_registro extends AppCompatActivity {
 
         //BOTON PARA REGRESAR A LA PAGINA PRINCIPAL
         final ImageButton btnRegresar = (ImageButton) findViewById(R.id.imageButtonRegistroIzquierda);
+
+        // ANIMACIÓN DE LA FRANJA GIRATORIA (replicando rotBGimg CSS @keyframes)
+        // from { transform: rotate(0deg) } to { transform: rotate(360deg) } — duración 3s, linear, infinito
+        final View vGradientStrip = findViewById(R.id.vGradientStrip);
+        ObjectAnimator rotacion = ObjectAnimator.ofFloat(vGradientStrip, "rotation", 0f, 360f);
+        rotacion.setDuration(3000);                        // --duration equivalente: 3s
+        rotacion.setRepeatCount(ObjectAnimator.INFINITE);
+        rotacion.setInterpolator(new LinearInterpolator()); // giro uniforme (linear)
+        rotacion.start();
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
         Glide.with(this)

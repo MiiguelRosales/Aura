@@ -43,11 +43,20 @@
         android:text="REGISTRAR"
         android:textColor="#FFFFFF"
         android:textSize="28sp"
-        app:backgroundTint="#004D95"
+        app:backgroundTint="@android:color/transparent"
         app:cornerRadius="20dp"
-        app:strokeColor="#80FFFFFF"
-        app:strokeWidth="1dp" />
+        app:strokeColor="@android:color/transparent"
+        app:strokeWidth="0dp"
+        android:background="@drawable/btn_registro_bg"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp" />
 
+    <!--
+        card CSS replicado:
+        - MaterialCardView (outer, #07182E, 20dp): recorta los hijos
+        - vGradientStrip (100dp × 900dp, gradiente cyan→magenta): rota 360° en Java
+        - cardInner (margen 5dp, #07182E, 15dp): tapa el centro → solo se ve el borde brillante
+    -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardViewRegistro"
         android:layout_width="match_parent"
@@ -58,22 +67,44 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="#B3232222"
-        app:cardCornerRadius="30dp"
-        app:cardElevation="0dp"
-        app:strokeColor="#003F5B"
-        app:strokeWidth="10dp">
+        app:cardBackgroundColor="#07182E"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:strokeWidth="0dp">
 
-        <ScrollView
+        <!-- Contenedor que superpone la franja giratoria y el interior oscuro -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fadeScrollbars="false">
+            android:layout_height="match_parent">
 
-            <LinearLayout
+            <!-- ::before — franja giratoria gradiente (ancho 100dp, altura 900dp para cubrir la diagonal al rotar) -->
+            <View
+                android:id="@+id/vGradientStrip"
+                android:layout_width="100dp"
+                android:layout_height="900dp"
+                android:layout_gravity="center"
+                android:background="@drawable/card_gradient_strip"
+                android:clickable="false"
+                android:focusable="false" />
+
+            <!-- ::after — capa interior que tapa el centro y deja el borde brillante (inset 5dp) -->
+            <FrameLayout
+                android:id="@+id/cardInner"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="30dp">
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"
+                android:background="@drawable/card_inner_bg">
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fadeScrollbars="false">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="30dp">
 
                 <EditText
                     android:id="@+id/etNombreUsuario"
@@ -153,8 +184,12 @@
                     android:textColorHint="#CCCCCC"
                     android:textSize="24sp" />
 
-            </LinearLayout>
-        </ScrollView>
+                    </LinearLayout>
+                </ScrollView>
+
+            </FrameLayout>
+
+        </FrameLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
