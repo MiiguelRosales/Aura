@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_vincular"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".pantalla_vincular">
+
+    <ImageView
+        android:id="@+id/ivFondoGifVincular"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/inicio" /> <TextView
+    android:id="@+id/tvTituloVincular"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="36dp"
+    android:fontFamily="@font/caveat_brush"
+    android:shadowColor="#80000000"
+    android:shadowDx="22"
+    android:shadowDy="22"
+    android:shadowRadius="4"
+    android:text="VINCULAR"
+    android:textAlignment="center"
+    android:textColor="#FFFFFF"
+    android:textSize="70sp"
+    android:textStyle="bold" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardViewVincular"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginHorizontal="30dp"
+        app:cardBackgroundColor="#B3232222"
+        app:cardCornerRadius="30dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#003F5B"
+        app:strokeWidth="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="40dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ingresa tu código"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/caveat_brush"
+                android:textSize="32sp"
+                android:layout_marginBottom="24dp"/>
+
+            <EditText
+                android:id="@+id/etCodigoVincular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:backgroundTint="#FFFFFF"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="CÓDIGO"
+                android:inputType="textCapCharacters"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#CCCCCC"
+                android:textSize="36sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAceptarVinculo"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="ACEPTAR"
+                android:textColor="#FFFFFF"
+                android:fontFamily="@font/caveat_brush"
+                android:textSize="28sp"
+                app:backgroundTint="#004D95"
+                app:cornerRadius="20dp"
+                app:strokeColor="#80FFFFFF"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <ImageButton
+        android:id="@+id/imageButtonVincularIzquierda"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:src="@drawable/flechaizquierda" />
+
+</RelativeLayout>
