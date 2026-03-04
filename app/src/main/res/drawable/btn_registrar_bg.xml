@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo del botón REGISTRAR: oscuro con borde teal y orbs de luz en esquina superior derecha -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Base oscura slate-900 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#0F172A" />
+            <corners android:radius="20dp" />
+            <stroke
+                android:width="2dp"
+                android:color="#0D9488" />
+        </shape>
+    </item>
+    <!-- Orb indigo (before) esquina superior derecha -->
+    <item
+        android:right="4dp"
+        android:top="0dp"
+        android:left="180dp"
+        android:bottom="18dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="50%"
+                android:startColor="#B06366F1"
+                android:centerColor="#556366F1"
+                android:endColor="#006366F1" />
+        </shape>
+    </item>
+    <!-- Orb teal (after) esquina superior derecha -->
+    <item
+        android:right="2dp"
+        android:top="0dp"
+        android:left="160dp"
+        android:bottom="8dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="50%"
+                android:startColor="#9934D399"
+                android:centerColor="#5534D399"
+                android:endColor="#0034D399" />
+        </shape>
+    </item>
+</layer-list>

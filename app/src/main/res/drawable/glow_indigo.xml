@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simula el pseudo-elemento ::before del botón CSS: orb indigo difuminado -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="50%"
+        android:startColor="#B06366F1"
+        android:centerColor="#556366F1"
+        android:endColor="#006366F1" />
+</shape>
