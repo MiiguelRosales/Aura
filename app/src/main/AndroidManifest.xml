@@ -29,6 +29,18 @@
             android:name=".LoadingActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".PantallaJuegos"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaVincular"
+            android:exported="false" />
+
+        <activity
+            android:name=".PantallaCompartirCodigo"
+            android:exported="false" />
+
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713"/>

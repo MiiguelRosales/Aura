@@ -5,7 +5,7 @@
     android:id="@+id/main_vincular"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PantallaVincular">
+    tools:context=".PantallaCompartirCodigo">
 
     <ImageView
         android:id="@+id/ivFondoGifVincular"
@@ -24,7 +24,7 @@
     android:shadowDx="22"
     android:shadowDy="22"
     android:shadowRadius="4"
-    android:text="VINCULAR"
+    android:text="TOKEN"
     android:textAlignment="center"
     android:textColor="#FFFFFF"
     android:textSize="70sp"
@@ -52,11 +52,12 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ingresa tu código"
+                android:text="Compartir el siguiente código con tu amigo"
                 android:textColor="#FFFFFF"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="32sp"
-                android:layout_marginBottom="24dp"/>
+                android:layout_marginBottom="24dp"
+                android:textAlignment="center"/>
 
             <EditText
                 android:id="@+id/etCodigoVincular"
@@ -76,7 +77,7 @@
                 android:id="@+id/btnAceptarVinculo"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:text="ACEPTAR"
+                android:text="COMPARTIR"
                 android:textColor="#FFFFFF"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="28sp"
