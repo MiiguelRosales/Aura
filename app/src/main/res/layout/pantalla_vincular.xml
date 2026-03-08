@@ -12,23 +12,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        tools:src="@drawable/inicio" /> <TextView
-    android:id="@+id/tvTituloVincular"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentTop="true"
-    android:layout_centerHorizontal="true"
-    android:layout_marginTop="36dp"
-    android:fontFamily="@font/caveat_brush"
-    android:shadowColor="#80000000"
-    android:shadowDx="22"
-    android:shadowDy="22"
-    android:shadowRadius="4"
-    android:text="VINCULAR"
-    android:textAlignment="center"
-    android:textColor="#FFFFFF"
-    android:textSize="70sp"
-    android:textStyle="bold" />
+        tools:src="@drawable/pantalla_vincular" />
+
+    <TextView
+        android:id="@+id/tvTituloVincular"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/caveat_brush"
+        android:shadowColor="#80000000"
+        android:shadowDx="22"
+        android:shadowDy="22"
+        android:shadowRadius="4"
+        android:text="VINCULAR"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="70sp"
+        android:textStyle="bold" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardViewVincular"
@@ -52,7 +54,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ingresa tu código"
+                android:text="Ingresa el código de tu amigo"
+                android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="32sp"
@@ -89,7 +92,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <ImageButton
-        android:id="@+id/imageButtonVincularIzquierda"
+        android:id="@+id/imageButtonRegresar"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_alignParentStart="true"

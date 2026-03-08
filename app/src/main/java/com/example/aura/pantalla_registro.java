@@ -32,24 +32,15 @@ public class pantalla_registro extends AppCompatActivity {
         });
 
         //IMAGEN PARA EL FONDO ANIMADO
-        final ImageView ivFondo = (ImageView) findViewById(R.id.ivFondoGif);
+        final ImageView ivFondoGif = (ImageView) findViewById(R.id.ivFondoGif);
 
         //BOTON PARA REGRESAR A LA PAGINA PRINCIPAL
         final ImageButton btnRegresar = (ImageButton) findViewById(R.id.imageButtonRegistroIzquierda);
 
-        // ANIMACIÓN DE LA FRANJA GIRATORIA (replicando rotBGimg CSS @keyframes)
-        // from { transform: rotate(0deg) } to { transform: rotate(360deg) } — duración 3s, linear, infinito
-        final View vGradientStrip = findViewById(R.id.vGradientStrip);
-        ObjectAnimator rotacion = ObjectAnimator.ofFloat(vGradientStrip, "rotation", 0f, 360f);
-        rotacion.setDuration(3000);                        // --duration equivalente: 3s
-        rotacion.setRepeatCount(ObjectAnimator.INFINITE);
-        rotacion.setInterpolator(new LinearInterpolator()); // giro uniforme (linear)
-        rotacion.start();
-
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
         Glide.with(this)
-                .load(R.drawable.registro) // Tu archivo webp animado
-                .into(ivFondo);
+                .load(R.drawable.pantalla_registro) // Tu archivo webp animado
+                .into(ivFondoGif);
 
         //ESTE ES EL EVENTO DEL BOTON PARA REGRESAR A LA PANTALLA DE INICIO
         btnRegresar.setOnClickListener(new OnClickListener() {

@@ -35,10 +35,27 @@ public class pantalla_inicio extends AppCompatActivity {
         //BOTON PARA IR A LA PANTALLA DE REGISTRO
         final Button btnRegistro = (Button) findViewById(R.id.btnRegistro);
 
+        //BOTON PARA IR A LA PANTALLA INICIO
+        final Button btnInicio = (Button) findViewById(R.id.btnInicio);
+
+        //BOTON PARA IR A LA PANTALLA DE VINCULAR
+        final Button btnVincular = (Button) findViewById(R.id.btnVincular);
+
+
+
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
         Glide.with(this)
                 .load(R.drawable.inicio) // Carga el archivo webp de inicio
                 .into(ivFondo);
+
+        //EVENTO PARA IR A LA PANTALLA DE JUEGOS
+        btnInicio.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(pantalla_inicio.this, PantallaJuegos.class);
+                startActivity(intent);
+            }
+        });
 
         //ESTE ES EL EVENTO DEL BOTON PARA IR A LA PANTALLA DE REGISTRO
         btnRegistro.setOnClickListener(new OnClickListener() {
@@ -49,5 +66,16 @@ public class pantalla_inicio extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        //EVENTO PARA IR A VINCULAR
+        btnVincular.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(pantalla_inicio.this, PantallaVincular.class);
+                startActivity(intent);
+            }
+        });
+
+
     }
 }

@@ -90,7 +90,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <ImageButton
-        android:id="@+id/imageButtonVincularIzquierda"
+        android:id="@+id/imageButtonRegresar"
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:layout_alignParentStart="true"
