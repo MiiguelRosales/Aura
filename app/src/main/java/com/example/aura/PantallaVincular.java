@@ -16,7 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 
-public class PantallaVincular extends AppCompatActivity {
+public class PantallaVincular extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad

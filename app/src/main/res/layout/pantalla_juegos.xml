@@ -5,12 +5,14 @@
     android:id="@+id/main_juegos"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_neon_dark"
     tools:context=".PantallaJuegos">
 
     <ImageView
         android:id="@+id/ivFondoJuegos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         android:scaleType="centerCrop"
         tools:src="@drawable/registro" />
 
@@ -41,14 +43,14 @@
         android:insetTop="0dp"
         android:insetRight="0dp"
         android:insetBottom="0dp"
-        app:backgroundTint="#004D95"
-        app:cornerRadius="20dp"
+        app:backgroundTint="@color/aura_btn_fill"
+        app:cornerRadius="12dp"
         app:icon="@drawable/configuracion"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:iconSize="35dp"
         app:iconTint="@color/white"
-        app:strokeColor="#80FFFFFF"
+        app:strokeColor="@color/aura_btn_stroke"
         app:strokeWidth="1dp"
         android:contentDescription="Configuración" />
 
@@ -61,13 +63,13 @@
         android:layout_marginBottom="36dp"
         android:fontFamily="@font/caveat_brush"
         android:text="JUGAR"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textSize="28sp"
         android:paddingStart="40dp"
         android:paddingEnd="40dp"
-        app:backgroundTint="#004D95"
-        app:cornerRadius="20dp"
-        app:strokeColor="#80FFFFFF"
+        app:backgroundTint="@color/aura_btn_fill"
+        app:cornerRadius="12dp"
+        app:strokeColor="@color/aura_btn_stroke"
         app:strokeWidth="1dp" />
 
     <com.google.android.material.card.MaterialCardView
@@ -80,11 +82,11 @@
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="#B3232222"
-        app:cardCornerRadius="30dp"
+        app:cardBackgroundColor="@color/aura_card_bg"
+        app:cardCornerRadius="20dp"
         app:cardElevation="0dp"
-        app:strokeColor="#003F5B"
-        app:strokeWidth="8dp">
+        app:strokeColor="@color/aura_card_stroke_subtle"
+        app:strokeWidth="1dp">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -105,8 +107,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -117,8 +120,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -129,8 +133,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -141,8 +146,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -153,8 +159,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -165,8 +172,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -177,8 +185,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>
@@ -189,8 +198,9 @@
                     android:layout_height="80dp"
                     android:layout_columnWeight="1"
                     android:layout_margin="4dp"
+                    app:cardBackgroundColor="@color/aura_mini_card_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#FFFFFF"
+                    app:strokeColor="@color/aura_card_stroke_subtle"
                     app:strokeWidth="1dp">
                     <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/mesa" />
                 </com.google.android.material.card.MaterialCardView>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Fondo del botón REGISTRAR: oscuro con borde teal y orbs de luz en esquina superior derecha -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Base oscura slate-900 -->

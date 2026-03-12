@@ -16,7 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 
-public class PantallaCompartirCodigo extends AppCompatActivity {
+public class PantallaCompartirCodigo extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

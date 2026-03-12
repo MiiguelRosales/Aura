@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="26dp"
+    android:height="26dp"
+    android:viewportWidth="26"
+    android:viewportHeight="26">
+    <!-- Luna (media luna con path) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M13,3 C8.029,3 4,7.029 4,12 C4,16.971 8.029,21 13,21
+                          C17.971,21 22,16.971 22,12 C22,11.5 21.96,11.01 21.88,10.53
+                          C20.6,13.19 17.87,15 14.75,15 C10.33,15 6.75,11.42 6.75,7
+                          C6.75,5.56 7.14,4.21 7.82,3.05 C7.23,3.02 6.62,3 6,3 Z" />
+    <!-- Punto pequeño de luna -->
+    <path
+        android:fillColor="#AAAACC"
+        android:pathData="M16,8 m-1.5,0 a1.5,1.5 0 1,0 3,0 a1.5,1.5 0 1,0 -3,0" />
+    <path
+        android:fillColor="#AAAACC"
+        android:pathData="M18,13 m-1,0 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0" />
+</vector>

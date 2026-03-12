@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Fondo del botón REGISTRAR: dark #07182E con borde degradado cyan→magenta -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Borde gradiente cyan → magenta -->

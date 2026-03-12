@@ -17,7 +17,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 
-public class pantalla_registro extends AppCompatActivity {
+public class pantalla_registro extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad

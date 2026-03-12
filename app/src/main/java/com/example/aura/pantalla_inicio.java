@@ -1,6 +1,8 @@
 package com.example.aura;
 
+import android.animation.ObjectAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -18,6 +21,7 @@ import android.widget.ViewSwitcher;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,16 +31,26 @@ import com.bumptech.glide.Glide;
 
 public class pantalla_inicio extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "AuraPrefs";
+    private static final String KEY_DARK_MODE = "darkMode";
+
     private final String[] frases = {"AURA", "ES VIDA", "ES SEGURIDAD", "ES FAMILIA", "ES AMIGO", "ES AURA"};
     private int fraseIndex = 0;
     private Handler handler;
     private Runnable runnable;
+    private boolean isDarkMode;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
-        super.onCreate(savedInstanceState); //llamada a su implementacion
+    protected void onCreate(Bundle savedInstanceState) {
+        // Aplicar tema guardado ANTES de setContentView
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        isDarkMode = prefs.getBoolean(KEY_DARK_MODE, true);
+        AppCompatDelegate.setDefaultNightMode(
+                isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+
+        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.pantalla_inicio); //indica a android que debe establecer
+        setContentView(R.layout.pantalla_inicio);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -88,8 +102,27 @@ public class pantalla_inicio extends AppCompatActivity {
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
         Glide.with(this)
-                .load(R.drawable.inicio) // Carga el archivo webp de inicio
+                .load(R.drawable.pantalla_vincular)
                 .into(ivFondo);
+
+        // TOGGLE DE TEMA (sol / luna)
+        final FrameLayout layoutToggle = findViewById(R.id.layoutThemeToggle);
+        final ImageView ivThumb = findViewById(R.id.ivThumbToggle);
+        actualizarToggleUI(layoutToggle, ivThumb, isDarkMode);
+
+        layoutToggle.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isDarkMode = !isDarkMode;
+                // Guardar preferencia
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                        .edit().putBoolean(KEY_DARK_MODE, isDarkMode).apply();
+                // Aplicar tema globalmente y recrear
+                AppCompatDelegate.setDefaultNightMode(
+                        isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+                recreate();
+            }
+        });
 
         //EVENTO PARA IR A LA PANTALLA DE JUEGOS
         btnInicio.setOnClickListener(new OnClickListener() {
@@ -104,7 +137,6 @@ public class pantalla_inicio extends AppCompatActivity {
         btnRegistro.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Pasamos por la pantalla de carga antes de llegar a pantalla_registro
                 Intent intent = new Intent(pantalla_inicio.this, LoadingActivity.class);
                 startActivity(intent);
             }
@@ -118,8 +150,20 @@ public class pantalla_inicio extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
-
+    private void actualizarToggleUI(FrameLayout track, ImageView thumb, boolean dark) {
+        float density = getResources().getDisplayMetrics().density;
+        if (dark) {
+            track.setBackground(getDrawable(R.drawable.toggle_track_night));
+            thumb.setImageResource(R.drawable.ic_moon);
+            // Thumb a la derecha: 64dp track - 26dp thumb - 4dp margin = 34dp
+            ObjectAnimator.ofFloat(thumb, "translationX", 34 * density).setDuration(300).start();
+        } else {
+            track.setBackground(getDrawable(R.drawable.toggle_track_day));
+            thumb.setImageResource(R.drawable.ic_sun);
+            ObjectAnimator.ofFloat(thumb, "translationX", 0f).setDuration(300).start();
+        }
     }
 
     @Override

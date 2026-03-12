@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- TEMA OSCURO (night) -->
+    <color name="aura_overlay">#99080810</color>
+    <color name="aura_card_bg">#12121C</color>
+    <color name="aura_card_bg_trans">#C212121C</color>
+    <color name="aura_card_stroke">#007ACC</color>
+    <color name="aura_card_stroke_subtle">#1E2A42</color>
+    <color name="aura_btn_fill">#1C3B6E</color>
+    <color name="aura_btn_stroke">#2D4F8A</color>
+    <color name="aura_text_primary">#FFFFFF</color>
+    <color name="aura_text_hint">#5A6480</color>
+    <color name="aura_input_underline">#2D4A7A</color>
+    <color name="aura_title_color">#FFFFFF</color>
+    <color name="aura_subtitle_color">#4FC3F7</color>
+    <color name="aura_mini_card_bg">#0E1018</color>
+    <color name="aura_mini_card_stroke">#1E2A42</color>
+    <color name="aura_icon_tint">#FFFFFF</color>
+</resources>

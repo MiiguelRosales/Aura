@@ -18,7 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
  *   - Cada página hace rotateY 180° → 0° en su ventana de tiempo, con fade-in/out
  *   - Después de LOADING_DURATION ms se navega a pantalla_registro
  */
-public class LoadingActivity extends AppCompatActivity {
+public class LoadingActivity extends BaseActivity {
 
     /** Duración de UN ciclo de animación en ms (coincide con --duration: 3s del CSS). */
     private static final long CYCLE_MS = 2_000L;

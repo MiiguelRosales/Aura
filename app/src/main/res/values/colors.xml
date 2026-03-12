@@ -7,4 +7,20 @@
     <color name="colorTexto">#FFEB3B</color>
     <color name="colorSubtexto">#FFF18C</color>
 
+    <!-- TEMA CLARO (light) -->
+    <color name="aura_overlay">#33007ACC</color>
+    <color name="aura_card_bg">#FFFFFF</color>
+    <color name="aura_card_bg_trans">#E6FFFFFF</color>
+    <color name="aura_card_stroke">#007ACC</color>
+    <color name="aura_card_stroke_subtle">#BBDEFB</color>
+    <color name="aura_btn_fill">#007ACC</color>
+    <color name="aura_btn_stroke">#0056A3</color>
+    <color name="aura_text_primary">#0D1B2A</color>
+    <color name="aura_text_hint">#7A8FAA</color>
+    <color name="aura_input_underline">#007ACC</color>
+    <color name="aura_title_color">#0D1B2A</color>
+    <color name="aura_subtitle_color">#0065BD</color>
+    <color name="aura_mini_card_bg">#DDEEFF</color>
+    <color name="aura_mini_card_stroke">#007ACC</color>
+    <color name="aura_icon_tint">#FFFFFF</color>
 </resources>

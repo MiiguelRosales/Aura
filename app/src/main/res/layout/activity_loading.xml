@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0D1B2A"
+    android:background="@drawable/bg_neon_dark"
     android:gravity="center">
 
     <!-- Sombra izquierda del libro -->

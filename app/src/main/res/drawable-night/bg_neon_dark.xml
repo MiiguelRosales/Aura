@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo modo OSCURO: gradiente azul VS Code oscuro -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#0D1B2A"
+        android:centerColor="#091420"
+        android:endColor="#060C18"
+        android:type="linear" />
+</shape>

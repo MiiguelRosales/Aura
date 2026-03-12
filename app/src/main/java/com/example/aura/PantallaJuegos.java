@@ -28,7 +28,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 
-public class PantallaJuegos extends AppCompatActivity {
+public class PantallaJuegos extends BaseActivity {
 
     private static final String CHANNEL_ID = "juego_notificaciones";
     private static final int NOTIFICATION_ID = 1;

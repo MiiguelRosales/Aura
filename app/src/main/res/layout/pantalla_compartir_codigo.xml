@@ -5,12 +5,14 @@
     android:id="@+id/main_vincular"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_neon_dark"
     tools:context=".PantallaCompartirCodigo">
 
     <ImageView
         android:id="@+id/ivFondoGifVincular"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         android:scaleType="centerCrop"
         tools:src="@drawable/inicio" /> <TextView
     android:id="@+id/tvTituloVincular"
@@ -20,13 +22,13 @@
     android:layout_centerHorizontal="true"
     android:layout_marginTop="36dp"
     android:fontFamily="@font/caveat_brush"
-    android:shadowColor="#80000000"
-    android:shadowDx="22"
-    android:shadowDy="22"
-    android:shadowRadius="4"
+    android:shadowColor="@color/aura_card_stroke"
+    android:shadowDx="0"
+    android:shadowDy="0"
+    android:shadowRadius="18"
     android:text="TOKEN"
     android:textAlignment="center"
-    android:textColor="#FFFFFF"
+    android:textColor="@color/aura_text_primary"
     android:textSize="70sp"
     android:textStyle="bold" />
 
@@ -36,11 +38,11 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_marginHorizontal="30dp"
-        app:cardBackgroundColor="#B3232222"
-        app:cardCornerRadius="30dp"
+        app:cardBackgroundColor="@color/aura_card_bg"
+        app:cardCornerRadius="20dp"
         app:cardElevation="0dp"
-        app:strokeColor="#003F5B"
-        app:strokeWidth="10dp">
+        app:strokeColor="@color/aura_card_stroke_subtle"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -53,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Compartir el siguiente código con tu amigo"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/aura_text_primary"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="32sp"
                 android:layout_marginBottom="24dp"
@@ -64,13 +66,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="30dp"
-                android:backgroundTint="#FFFFFF"
+                android:backgroundTint="@color/aura_input_underline"
                 android:fontFamily="@font/caveat_brush"
                 android:hint="CÓDIGO"
                 android:inputType="textCapCharacters"
                 android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#CCCCCC"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
                 android:textSize="36sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -78,12 +80,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:text="COMPARTIR"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="28sp"
-                app:backgroundTint="#004D95"
-                app:cornerRadius="20dp"
-                app:strokeColor="#80FFFFFF"
+                app:backgroundTint="@color/aura_btn_fill"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/aura_btn_stroke"
                 app:strokeWidth="1dp" />
 
         </LinearLayout>
