@@ -14,6 +14,19 @@
         android:scaleType="centerCrop"
         tools:src="@drawable/registro" />
 
+    <ImageButton
+        android:id="@+id/imageButtonRegresar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="36dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:src="@drawable/flechaizquierda"
+        android:contentDescription="Regresar" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConfiguracionJuegos"
         style="@style/Widget.MaterialComponents.Button.Icon"

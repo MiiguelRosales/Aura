@@ -36,9 +36,9 @@
         android:id="@+id/btnRegistrar"
         android:layout_width="wrap_content"
         android:layout_height="64dp"
-        android:layout_above="@id/imageButtonRegistroDerecha"
+        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="107dp"
         android:fontFamily="@font/caveat_brush"
         android:text="REGISTRAR"
         android:textColor="#FFFFFF"
@@ -171,17 +171,5 @@
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:src="@drawable/flechaizquierda" />
-
-    <ImageButton
-        android:id="@+id/imageButtonRegistroDerecha"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:background="@android:color/transparent"
-        android:scaleType="fitCenter"
-        android:src="@drawable/flechaderecha" />
 
 </RelativeLayout>
