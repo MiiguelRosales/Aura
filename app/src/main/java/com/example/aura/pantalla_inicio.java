@@ -1,14 +1,24 @@
 package com.example.aura;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextSwitcher;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -16,6 +26,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 
 public class pantalla_inicio extends AppCompatActivity {
+
+    private final String[] frases = {"AURA", "ES VIDA", "ES SEGURIDAD", "ES FAMILIA", "ES AMIGO", "ES AURA"};
+    private int fraseIndex = 0;
+    private Handler handler;
+    private Runnable runnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
@@ -41,7 +56,35 @@ public class pantalla_inicio extends AppCompatActivity {
         //BOTON PARA IR A LA PANTALLA DE VINCULAR
         final Button btnVincular = (Button) findViewById(R.id.btnVincular);
 
+        // TEXT SWITCHER PARA LAS FRASES ANIMADAS
+        final TextSwitcher textSwitcher = findViewById(R.id.textSwitcherFrase);
+        final Typeface fuenteCaveat = ResourcesCompat.getFont(this, R.font.caveat_brush);
+        textSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
+            @Override
+            public View makeView() {
+                TextView tv = new TextView(pantalla_inicio.this);
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 62f);
+                tv.setTextColor(Color.WHITE);
+                tv.setTypeface(fuenteCaveat, Typeface.BOLD);
+                tv.setGravity(Gravity.CENTER);
+                tv.setShadowLayer(4f, 22f, 22f, Color.parseColor("#80000000"));
+                return tv;
+            }
+        });
+        textSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
+        textSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_top));
+        textSwitcher.setText(frases[fraseIndex]);
 
+        handler = new Handler(Looper.getMainLooper());
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                fraseIndex = (fraseIndex + 1) % frases.length;
+                textSwitcher.setText(frases[fraseIndex]);
+                handler.postDelayed(this, 2000);
+            }
+        };
+        handler.postDelayed(runnable, 2000);
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
         Glide.with(this)
@@ -77,5 +120,13 @@ public class pantalla_inicio extends AppCompatActivity {
         });
 
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (handler != null && runnable != null) {
+            handler.removeCallbacks(runnable);
+        }
     }
 }
