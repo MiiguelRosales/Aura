@@ -48,7 +48,7 @@
         android:paddingStart="40dp"
         android:paddingEnd="40dp"
         app:backgroundTint="@color/aura_btn_fill"
-        app:cornerRadius="12dp"
+        app:cornerRadius="28dp"
         app:strokeColor="@color/aura_btn_stroke"
         app:strokeWidth="1dp" />
 
@@ -63,8 +63,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/aura_card_bg"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="0dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
         app:strokeColor="@color/aura_card_stroke_subtle"
         app:strokeWidth="1dp">
 

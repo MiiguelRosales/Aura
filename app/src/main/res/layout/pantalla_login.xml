@@ -40,8 +40,8 @@
         android:layout_centerInParent="true"
         android:layout_marginHorizontal="30dp"
         app:cardBackgroundColor="@color/aura_card_bg"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="0dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
         app:strokeColor="@color/aura_card_stroke_subtle"
         app:strokeWidth="1dp">
 
@@ -97,7 +97,7 @@
                 android:textColor="@color/white"
                 android:textSize="28sp"
                 app:backgroundTint="@color/aura_btn_fill"
-                app:cornerRadius="12dp"
+                app:cornerRadius="28dp"
                 app:strokeColor="@color/aura_btn_stroke"
                 app:strokeWidth="1dp" />
 

@@ -32,10 +32,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".LoadingActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".PantallaJuegos"
             android:exported="false" />
 

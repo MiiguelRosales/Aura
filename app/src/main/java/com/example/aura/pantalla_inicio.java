@@ -137,7 +137,7 @@ public class pantalla_inicio extends AppCompatActivity {
         btnRegistro.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(pantalla_inicio.this, LoadingActivity.class);
+                Intent intent = new Intent(pantalla_inicio.this, pantalla_registro.class);
                 startActivity(intent);
             }
         });
