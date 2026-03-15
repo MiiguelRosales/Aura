@@ -124,11 +124,11 @@ public class pantalla_inicio extends AppCompatActivity {
             }
         });
 
-        //EVENTO PARA IR A LA PANTALLA DE JUEGOS
+        //EVENTO PARA IR A LA PANTALLA DE LOGIN
         btnInicio.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(pantalla_inicio.this, PantallaJuegos.class);
+                Intent intent = new Intent(pantalla_inicio.this, pantalla_login.class);
                 startActivity(intent);
             }
         });

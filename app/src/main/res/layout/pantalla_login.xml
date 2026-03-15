@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_login"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_neon_dark"
+    tools:context=".pantalla_login">
+
+    <ImageView
+        android:id="@+id/ivFondoGifLogin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/pantalla_registro" />
+
+    <TextView
+        android:id="@+id/tvTituloLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"
+        android:fontFamily="@font/caveat_brush"
+        android:shadowColor="@color/aura_card_stroke"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:shadowRadius="18"
+        android:text="LOGIN"
+        android:textAlignment="center"
+        android:textColor="@color/aura_text_primary"
+        android:textSize="70sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardViewLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginHorizontal="30dp"
+        app:cardBackgroundColor="@color/aura_card_bg"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/aura_card_stroke_subtle"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="30dp">
+
+            <EditText
+                android:id="@+id/etCorreoLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="Correo"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="24sp" />
+
+            <EditText
+                android:id="@+id/etContrasenaLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="Contraseña"
+                android:inputType="textPassword"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/tvDatosDemo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:fontFamily="@font/caveat_brush"
+                android:gravity="center"
+                android:text="Datos: aura@demo.com  |  123456"
+                android:textColor="@color/aura_subtitle_color"
+                android:textSize="22sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnIniciarSesion"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="INICIAR SESIÓN"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                app:backgroundTint="@color/aura_btn_fill"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/aura_btn_stroke"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <ImageButton
+        android:id="@+id/imageButtonLoginIzquierda"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        android:src="@drawable/flechaizquierda" />
+
+</RelativeLayout>

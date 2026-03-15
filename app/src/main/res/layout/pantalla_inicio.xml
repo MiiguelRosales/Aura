@@ -78,7 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginBottom="16dp"
-                android:text="INICIO"
+                android:text="LOGIN"
                 android:textColor="@color/white"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="28sp"
