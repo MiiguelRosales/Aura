@@ -1,16 +1,15 @@
 package com.example.aura;
 
-import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.animation.LinearInterpolator;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -41,6 +40,22 @@ public class pantalla_registro extends BaseActivity {
         Glide.with(this)
                 .load(R.drawable.pantalla_registro) // Tu archivo webp animado
                 .into(ivFondoGif);
+
+        //DROPDOWN DOMINIO DE CORREO
+        final String[] dominios = {"gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com"};
+        final AutoCompleteTextView actvDominio = findViewById(R.id.actvDominio);
+        ArrayAdapter<String> adapterDominio = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, dominios);
+        actvDominio.setAdapter(adapterDominio);
+        actvDominio.setText(dominios[0], false);
+
+        //DROPDOWN TIPO DE USUARIO
+        final String[] tiposUsuario = {"🛡️  Guardián", "🌟  Explorador"};
+        final AutoCompleteTextView actvTipoUsuario = findViewById(R.id.actvTipoUsuario);
+        ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, tiposUsuario);
+        actvTipoUsuario.setAdapter(adapterTipo);
+        actvTipoUsuario.setText(tiposUsuario[0], false);
 
         //ESTE ES EL EVENTO DEL BOTON PARA REGRESAR A LA PANTALLA DE INICIO
         btnRegresar.setOnClickListener(new OnClickListener() {
