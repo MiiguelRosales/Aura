@@ -51,6 +51,31 @@
             android:orientation="vertical"
             android:padding="30dp">
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTipoUsuarioLogin"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:hint="Ingresar como"
+                app:boxBackgroundColor="@android:color/transparent"
+                app:boxStrokeColor="@color/aura_input_underline"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="@color/aura_text_hint">
+
+                <AutoCompleteTextView
+                    android:id="@+id/actvTipoUsuarioLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/caveat_brush"
+                    android:inputType="none"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="22sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
             <EditText
                 android:id="@+id/etCorreoLogin"
                 android:layout_width="match_parent"

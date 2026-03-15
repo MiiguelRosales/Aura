@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Compartir el siguiente código con tu amigo"
+                android:text="Compartir el siguiente código con tu guardian"
                 android:textColor="@color/aura_text_primary"
                 android:fontFamily="@font/caveat_brush"
                 android:textSize="32sp"

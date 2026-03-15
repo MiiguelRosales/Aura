@@ -1,5 +1,6 @@
 package com.example.aura;
 
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -17,6 +18,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.bumptech.glide.Glide;
 
 public class pantalla_registro extends BaseActivity {
+
+    private static final String PREFS_NAME = "AuraPrefs";
+    private static final String KEY_TIPO_USUARIO = "tipoUsuario";
+    private static final String TIPO_GUARDIAN = "GUARDIAN";
+    private static final String TIPO_EXPLORADOR = "EXPLORADOR";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
@@ -55,7 +61,22 @@ public class pantalla_registro extends BaseActivity {
         ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, tiposUsuario);
         actvTipoUsuario.setAdapter(adapterTipo);
-        actvTipoUsuario.setText(tiposUsuario[0], false);
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        String tipoGuardado = prefs.getString(KEY_TIPO_USUARIO, TIPO_EXPLORADOR);
+        if (TIPO_GUARDIAN.equals(tipoGuardado)) {
+            actvTipoUsuario.setText(tiposUsuario[0], false);
+        } else {
+            actvTipoUsuario.setText(tiposUsuario[1], false);
+        }
+
+        actvTipoUsuario.setOnItemClickListener((parent, view, position, id) -> {
+            String tipo = position == 0 ? TIPO_GUARDIAN : TIPO_EXPLORADOR;
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                    .edit()
+                    .putString(KEY_TIPO_USUARIO, tipo)
+                    .apply();
+        });
 
         //ESTE ES EL EVENTO DEL BOTON PARA REGRESAR A LA PANTALLA DE INICIO
         btnRegresar.setOnClickListener(new OnClickListener() {

@@ -56,7 +56,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ingresa el código de tu amigo"
+                android:text="Ingresa el código de tu explorador"
                 android:textAlignment="center"
                 android:textColor="@color/aura_text_primary"
                 android:fontFamily="@font/caveat_brush"

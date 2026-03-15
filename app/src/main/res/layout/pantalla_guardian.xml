@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_guardian"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_neon_dark"
+    tools:context=".PantallaGuardian">
+
+    <!-- BOTÓN REGRESAR -->
+    <ImageButton
+        android:id="@+id/imageButtonRegresarGuardian"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="24dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Regresar"
+        android:scaleType="fitCenter"
+        android:src="@drawable/flechaizquierda" />
+
+    <!-- TÍTULO -->
+    <TextView
+        android:id="@+id/tvTituloGuardian"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical"
+        android:fontFamily="@font/caveat_brush"
+        android:text="GUARDIÁN"
+        android:textColor="@color/aura_text_primary"
+        android:textSize="40sp"
+        android:textStyle="bold"
+        android:shadowColor="@color/aura_card_stroke"
+        android:shadowRadius="14"
+        android:shadowDx="0"
+        android:shadowDy="0" />
+
+    <!-- CONTENEDOR DE LOS DOS PANELES -->
+    <LinearLayout
+        android:id="@+id/layoutPaneles"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tvTituloGuardian"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="12dp"
+        android:layout_above="@id/imageButtonRegresarGuardian"
+        android:layout_marginBottom="12dp"
+        android:orientation="vertical"
+        android:weightSum="2">
+
+        <!-- ─── PANEL SUPERIOR: Historial de notificaciones ─────── -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHistorial"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginBottom="10dp"
+            app:cardBackgroundColor="@color/aura_card_bg"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="8dp"
+            app:strokeColor="@color/aura_card_stroke_subtle"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Encabezado historial -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/caveat_brush"
+                        android:text="🔔  Historial de notificaciones"
+                        android:textColor="@color/aura_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLimpiarHistorial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:fontFamily="@font/caveat_brush"
+                        android:text="Limpiar"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        app:backgroundTint="@color/aura_btn_fill"
+                        app:cornerRadius="18dp"
+                        app:strokeColor="@color/aura_btn_stroke"
+                        app:strokeWidth="1dp" />
+
+                </LinearLayout>
+
+                <!-- Lista de notificaciones -->
+                <ListView
+                    android:id="@+id/listViewNotificaciones"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:divider="@color/aura_card_stroke_subtle"
+                    android:dividerHeight="1dp"
+                    android:scrollbars="vertical" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ─── PANEL INFERIOR: Mapa última ubicación ─────────── -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardMapa"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/aura_card_bg"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="8dp"
+            app:strokeColor="@color/aura_card_stroke_subtle"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- Encabezado mapa -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="10dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/caveat_brush"
+                        android:text="📍  Última ubicación registrada"
+                        android:textColor="@color/aura_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvUltimaActualizacion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/caveat_brush"
+                        android:text="Sin datos"
+                        android:textColor="@color/aura_text_hint"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <!-- MapView ocupa el resto de la card -->
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapViewGuardian"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="12dp"
+                    android:layout_marginBottom="12dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+</RelativeLayout>
