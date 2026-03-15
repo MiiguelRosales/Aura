@@ -47,6 +47,10 @@ public class pantalla_login extends BaseActivity {
         AutoCompleteTextView actvTipoUsuarioLogin = findViewById(R.id.actvTipoUsuarioLogin);
         MaterialButton btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
 
+        // Credenciales demo precargadas
+        etCorreo.setText(DEMO_CORREO);
+        etContrasena.setText(DEMO_CONTRASENA);
+
         final String[] tiposUsuario = {"🛡️  Guardián", "🌟  Explorador"};
         ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, tiposUsuario);
