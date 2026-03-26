@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.graphics.Insets;
@@ -58,6 +59,7 @@ public class pantalla_registro extends BaseActivity {
         //DROPDOWN TIPO DE USUARIO
         final String[] tiposUsuario = {"🛡️  Guardián", "🌟  Explorador"};
         final AutoCompleteTextView actvTipoUsuario = findViewById(R.id.actvTipoUsuario);
+        final TextView tvInfoTipoUsuario = findViewById(R.id.tvInfoTipoUsuario);
         ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, tiposUsuario);
         actvTipoUsuario.setAdapter(adapterTipo);
@@ -66,12 +68,15 @@ public class pantalla_registro extends BaseActivity {
         String tipoGuardado = prefs.getString(KEY_TIPO_USUARIO, TIPO_EXPLORADOR);
         if (TIPO_GUARDIAN.equals(tipoGuardado)) {
             actvTipoUsuario.setText(tiposUsuario[0], false);
+            actualizarInfoTipoUsuario(tvInfoTipoUsuario, TIPO_GUARDIAN);
         } else {
             actvTipoUsuario.setText(tiposUsuario[1], false);
+            actualizarInfoTipoUsuario(tvInfoTipoUsuario, TIPO_EXPLORADOR);
         }
 
         actvTipoUsuario.setOnItemClickListener((parent, view, position, id) -> {
             String tipo = position == 0 ? TIPO_GUARDIAN : TIPO_EXPLORADOR;
+            actualizarInfoTipoUsuario(tvInfoTipoUsuario, tipo);
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                     .edit()
                     .putString(KEY_TIPO_USUARIO, tipo)
@@ -89,5 +94,17 @@ public class pantalla_registro extends BaseActivity {
                 finish();
             }
         });
+    }
+
+    private void actualizarInfoTipoUsuario(TextView tvInfoTipoUsuario, String tipo) {
+        if (TIPO_GUARDIAN.equals(tipo)) {
+            tvInfoTipoUsuario.setText("Modo Guardián: cuidas y monitoreas a tu Explorador.");
+            tvInfoTipoUsuario.setVisibility(View.VISIBLE);
+        } else if (TIPO_EXPLORADOR.equals(tipo)) {
+            tvInfoTipoUsuario.setText("Modo Explorador: recibes acompañamiento y protección de tu Guardián.");
+            tvInfoTipoUsuario.setVisibility(View.VISIBLE);
+        } else {
+            tvInfoTipoUsuario.setVisibility(View.GONE);
+        }
     }
 }

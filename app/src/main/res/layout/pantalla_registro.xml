@@ -12,8 +12,8 @@
         android:id="@+id/ivFondoGif"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         android:scaleType="centerCrop"
+        android:visibility="gone"
         tools:src="@drawable/pantalla_registro" />
 
     <TextView
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="26dp"
         android:fontFamily="@font/caveat_brush"
         android:shadowColor="@color/aura_card_stroke"
         android:shadowDx="0"
@@ -31,279 +31,328 @@
         android:text="REGISTRO"
         android:textAlignment="center"
         android:textColor="@color/aura_text_primary"
-        android:textSize="70sp"
+        android:textSize="62sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvSubtituloRegistro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvTituloRegistro"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-8dp"
+        android:fontFamily="@font/caveat_brush"
+        android:text="Completa tus datos"
+        android:textColor="@color/aura_text_hint"
+        android:textSize="22sp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnRegistrar"
-        android:layout_width="wrap_content"
-        android:layout_height="64dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="107dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="88dp"
         android:fontFamily="@font/caveat_brush"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         android:text="REGISTRAR"
         android:textColor="@color/white"
         android:textSize="28sp"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp"
         app:backgroundTint="@color/aura_btn_fill"
-        app:cornerRadius="28dp"
+        app:cornerRadius="24dp"
         app:strokeColor="@color/aura_btn_stroke"
         app:strokeWidth="1dp" />
 
-    <com.google.android.material.card.MaterialCardView
+    <ScrollView
         android:id="@+id/cardViewRegistro"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_above="@id/btnRegistrar"
-        android:layout_below="@id/tvTituloRegistro"
-        android:layout_centerHorizontal="true"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/aura_card_bg"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="8dp"
-        app:strokeColor="@color/aura_card_stroke_subtle"
-        app:strokeWidth="1dp">
+        android:layout_below="@id/tvSubtituloRegistro"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="12dp"
+        android:fadeScrollbars="false"
+        android:fillViewport="true"
+        android:overScrollMode="ifContentScrolls">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fadeScrollbars="false">
+            android:layout_height="wrap_content"
+            android:background="@color/aura_mini_card_bg"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Tipo de usuario"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTipoUsuario"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:boxBackgroundColor="@android:color/transparent"
+                app:boxStrokeColor="@color/aura_input_underline"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintTextColor="@color/aura_text_hint">
+
+                <AutoCompleteTextView
+                    android:id="@+id/actvTipoUsuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/caveat_brush"
+                    android:inputType="none"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="20sp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvInfoTipoUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@color/aura_card_bg"
+                android:fontFamily="@font/caveat_brush"
+                android:padding="10dp"
+                android:text=""
+                android:textColor="@color/aura_text_primary"
+                android:textSize="17sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Nombre de usuario"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/etNombreUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="Ejemplo: MiguelR"
+                android:inputType="textPersonName"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="22sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Fecha de nacimiento"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="30dp">
+                android:layout_marginBottom="14dp"
+                android:orientation="horizontal">
 
-                <!-- TIPO DE USUARIO -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilTipoUsuario"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                    android:layout_width="match_parent"
+                <EditText
+                    android:id="@+id/etDia"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp"
-                    android:hint="Tipo de usuario"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:backgroundTint="@color/aura_input_underline"
+                    android:fontFamily="@font/caveat_brush"
+                    android:hint="DD"
+                    android:inputType="number"
+                    android:maxLength="2"
+                    android:textAlignment="center"
+                    android:textColor="@color/aura_text_primary"
+                    android:textColorHint="@color/aura_text_hint"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/etMes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="6dp"
+                    android:backgroundTint="@color/aura_input_underline"
+                    android:fontFamily="@font/caveat_brush"
+                    android:hint="MM"
+                    android:inputType="number"
+                    android:maxLength="2"
+                    android:textAlignment="center"
+                    android:textColor="@color/aura_text_primary"
+                    android:textColorHint="@color/aura_text_hint"
+                    android:textSize="20sp" />
+
+                <EditText
+                    android:id="@+id/etAnio"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.35"
+                    android:layout_marginStart="6dp"
+                    android:backgroundTint="@color/aura_input_underline"
+                    android:fontFamily="@font/caveat_brush"
+                    android:hint="AAAA"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:textAlignment="center"
+                    android:textColor="@color/aura_text_primary"
+                    android:textColorHint="@color/aura_text_hint"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Correo electrónico"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etCorreoLocal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/aura_input_underline"
+                    android:fontFamily="@font/caveat_brush"
+                    android:hint="usuario"
+                    android:inputType="textNoSuggestions"
+                    android:maxLength="25"
+                    android:textColor="@color/aura_text_primary"
+                    android:textColorHint="@color/aura_text_hint"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="6dp"
+                    android:fontFamily="@font/caveat_brush"
+                    android:text="@"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="22sp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDominio"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="dominio"
+                    app:boxBackgroundColor="@android:color/transparent"
                     app:boxStrokeColor="@color/aura_input_underline"
                     app:boxStrokeWidthFocused="2dp"
-                    app:hintTextColor="@color/aura_text_hint"
-                    app:boxBackgroundColor="@android:color/transparent">
+                    app:hintTextColor="@color/aura_text_hint">
 
                     <AutoCompleteTextView
-                        android:id="@+id/actvTipoUsuario"
+                        android:id="@+id/actvDominio"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/caveat_brush"
                         android:inputType="none"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
                         android:textColor="@color/aura_text_primary"
-                        android:textSize="22sp"
-                        android:paddingTop="16dp"
-                        android:paddingBottom="16dp" />
+                        android:textSize="18sp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- EXPLICACIÓN DE ROLES -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:background="@color/aura_mini_card_bg"
-                    android:orientation="vertical"
-                    android:padding="12dp">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:fontFamily="@font/caveat_brush"
-                        android:text="🛡️  Guardián — cuida y monitorea a su Explorador"
-                        android:textColor="@color/aura_text_primary"
-                        android:textSize="18sp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/caveat_brush"
-                        android:text="🌟  Explorador — es acompañado y protegido por su Guardián"
-                        android:textColor="@color/aura_text_primary"
-                        android:textSize="18sp" />
-
-                </LinearLayout>
-
-                <EditText
-                    android:id="@+id/etNombreUsuario"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:backgroundTint="@color/aura_input_underline"
-                    android:fontFamily="@font/caveat_brush"
-                    android:hint="Nombre de usuario"
-                    android:inputType="textPersonName"
-                    android:textColor="@color/aura_text_primary"
-                    android:textColorHint="@color/aura_text_hint"
-                    android:textSize="24sp" />
-
-                <!-- FECHA DE NACIMIENTO: día / mes / año -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etDia"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:backgroundTint="@color/aura_input_underline"
-                        android:fontFamily="@font/caveat_brush"
-                        android:hint="Día"
-                        android:inputType="number"
-                        android:maxLength="2"
-                        android:textAlignment="center"
-                        android:textColor="@color/aura_text_primary"
-                        android:textColorHint="@color/aura_text_hint"
-                        android:textSize="24sp" />
-
-                    <EditText
-                        android:id="@+id/etMes"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginHorizontal="6dp"
-                        android:backgroundTint="@color/aura_input_underline"
-                        android:fontFamily="@font/caveat_brush"
-                        android:hint="Mes"
-                        android:inputType="number"
-                        android:maxLength="2"
-                        android:textAlignment="center"
-                        android:textColor="@color/aura_text_primary"
-                        android:textColorHint="@color/aura_text_hint"
-                        android:textSize="24sp" />
-
-                    <EditText
-                        android:id="@+id/etAnio"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="2"
-                        android:layout_marginStart="6dp"
-                        android:backgroundTint="@color/aura_input_underline"
-                        android:fontFamily="@font/caveat_brush"
-                        android:hint="Año"
-                        android:inputType="number"
-                        android:maxLength="4"
-                        android:textAlignment="center"
-                        android:textColor="@color/aura_text_primary"
-                        android:textColorHint="@color/aura_text_hint"
-                        android:textSize="24sp" />
-
-                </LinearLayout>
-
-                <!-- CORREO: usuario (max 25 chars) + dropdown de dominio -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etCorreoLocal"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.1"
-                        android:backgroundTint="@color/aura_input_underline"
-                        android:fontFamily="@font/caveat_brush"
-                        android:hint="usuario"
-                        android:inputType="textNoSuggestions"
-                        android:maxLength="25"
-                        android:textColor="@color/aura_text_primary"
-                        android:textColorHint="@color/aura_text_hint"
-                        android:textSize="22sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="4dp"
-                        android:fontFamily="@font/caveat_brush"
-                        android:text="@"
-                        android:textColor="@color/aura_text_hint"
-                        android:textSize="24sp" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilDominio"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.4"
-                        android:hint="dominio"
-                        app:boxStrokeColor="@color/aura_input_underline"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:hintTextColor="@color/aura_text_hint"
-                        app:boxBackgroundColor="@android:color/transparent">
-
-                        <AutoCompleteTextView
-                            android:id="@+id/actvDominio"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/caveat_brush"
-                            android:inputType="none"
-                            android:paddingTop="14dp"
-                            android:paddingBottom="14dp"
-                            android:textColor="@color/aura_text_primary"
-                            android:textSize="18sp" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                </LinearLayout>
-
-                <EditText
-                    android:id="@+id/etCelular"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:backgroundTint="@color/aura_input_underline"
-                    android:fontFamily="@font/caveat_brush"
-                    android:hint="Celular"
-                    android:inputType="phone"
-                    android:textColor="@color/aura_text_primary"
-                    android:textColorHint="@color/aura_text_hint"
-                    android:textSize="24sp" />
-
-                <EditText
-                    android:id="@+id/etContrasena"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:backgroundTint="@color/aura_input_underline"
-                    android:fontFamily="@font/caveat_brush"
-                    android:hint="Contraseña"
-                    android:inputType="textPassword"
-                    android:textColor="@color/aura_text_primary"
-                    android:textColorHint="@color/aura_text_hint"
-                    android:textSize="24sp" />
-
-                <EditText
-                    android:id="@+id/etConfirmarContrasena"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
-                    android:backgroundTint="@color/aura_input_underline"
-                    android:fontFamily="@font/caveat_brush"
-                    android:hint="Confirmar contraseña"
-                    android:inputType="textPassword"
-                    android:textColor="@color/aura_text_primary"
-                    android:textColorHint="@color/aura_text_hint"
-                    android:textSize="24sp" />
-
             </LinearLayout>
-        </ScrollView>
 
-    </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Celular"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/etCelular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="10 dígitos"
+                android:inputType="phone"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="22sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Contraseña"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/etContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="Mínimo 8 caracteres"
+                android:inputType="textPassword"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="22sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/caveat_brush"
+                android:text="Confirmar contraseña"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/etConfirmarContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:backgroundTint="@color/aura_input_underline"
+                android:fontFamily="@font/caveat_brush"
+                android:hint="Repite la misma contraseña"
+                android:inputType="textPassword"
+                android:textColor="@color/aura_text_primary"
+                android:textColorHint="@color/aura_text_hint"
+                android:textSize="22sp" />
+
+        </LinearLayout>
+    </ScrollView>
 
     <ImageButton
         android:id="@+id/imageButtonRegistroIzquierda"
@@ -312,7 +361,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="12dp"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:src="@drawable/flechaizquierda" />

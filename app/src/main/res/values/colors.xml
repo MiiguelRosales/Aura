@@ -8,7 +8,7 @@
     <color name="colorSubtexto">#FFF18C</color>
 
     <!-- TEMA CLARO (light) -->
-    <color name="aura_overlay">#33DC284F</color>
+    <color name="aura_overlay">#00000000</color>
     <color name="aura_card_bg">#F7F8FC</color>
     <color name="aura_card_bg_trans">#EEF7F8FC</color>
     <color name="aura_card_stroke">#8C7BFF</color>
