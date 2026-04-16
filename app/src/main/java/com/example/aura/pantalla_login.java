@@ -9,6 +9,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -18,21 +19,28 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class pantalla_login extends BaseActivity {
 
-    private static final String DEMO_CORREO = "aura@demo.com";
-    private static final String DEMO_CONTRASENA = "123456";
     private static final String PREFS_NAME = "AuraPrefs";
     private static final String KEY_TIPO_USUARIO = "tipoUsuario";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
+
+    private FirebaseAuth auth;
+    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.pantalla_login);
+        auth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_login), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -46,10 +54,9 @@ public class pantalla_login extends BaseActivity {
         EditText etContrasena = findViewById(R.id.etContrasenaLogin);
         AutoCompleteTextView actvTipoUsuarioLogin = findViewById(R.id.actvTipoUsuarioLogin);
         MaterialButton btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
+        TextView tvDatosDemo = findViewById(R.id.tvDatosDemo);
 
-        // Credenciales demo precargadas
-        etCorreo.setText(DEMO_CORREO);
-        etContrasena.setText(DEMO_CONTRASENA);
+        tvDatosDemo.setVisibility(TextView.GONE);
 
         final String[] tiposUsuario = {"🛡️  Guardián", "🌟  Explorador"};
         ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
@@ -84,31 +91,87 @@ public class pantalla_login extends BaseActivity {
         btnIniciarSesion.setOnClickListener(v -> {
             String correo = etCorreo.getText().toString().trim();
             String contrasena = etContrasena.getText().toString().trim();
+            String tipoSeleccionado = actvTipoUsuarioLogin.getText().toString();
+            String tipoEsperado = tipoSeleccionado.contains("Guardián") ? TIPO_GUARDIAN : TIPO_EXPLORADOR;
 
             if (TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
                 Toast.makeText(this, "Completa correo y contraseña", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            if (!DEMO_CORREO.equalsIgnoreCase(correo) || !DEMO_CONTRASENA.equals(contrasena)) {
-                Toast.makeText(this, "Datos incorrectos", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show();
-
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-            String tipoUsuario = prefs.getString(KEY_TIPO_USUARIO, TIPO_EXPLORADOR);
-
-            Intent intentDestino;
-            if (TIPO_GUARDIAN.equals(tipoUsuario)) {
-                intentDestino = new Intent(pantalla_login.this, PantallaGuardian.class);
-            } else {
-                intentDestino = new Intent(pantalla_login.this, PantallaJuegos.class);
-            }
-
-            startActivity(intentDestino);
-            finish();
+            btnIniciarSesion.setEnabled(false);
+            loginConFirebase(correo, contrasena, tipoEsperado, btnIniciarSesion);
         });
+    }
+
+    private void loginConFirebase(String correo,
+                                  String contrasena,
+                                  String tipoEsperado,
+                                  MaterialButton btnIniciarSesion) {
+        auth.signInWithEmailAndPassword(correo, contrasena)
+                .addOnSuccessListener(authResult -> {
+                    if (authResult.getUser() == null) {
+                        btnIniciarSesion.setEnabled(true);
+                        Toast.makeText(this, "No se pudo recuperar usuario", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String uid = authResult.getUser().getUid();
+                    firestore.collection("usuarios")
+                            .document(uid)
+                            .get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (!documentSnapshot.exists()) {
+                                    btnIniciarSesion.setEnabled(true);
+                                    Toast.makeText(this, "Perfil no encontrado", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                String tipoReal = documentSnapshot.getString("tipoUsuario");
+                                if (tipoReal == null) {
+                                    btnIniciarSesion.setEnabled(true);
+                                    Toast.makeText(this, "Perfil incompleto", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+
+                                if (!tipoEsperado.equals(tipoReal)) {
+                                    auth.signOut();
+                                    btnIniciarSesion.setEnabled(true);
+                                    Toast.makeText(this,
+                                            "Este usuario está registrado como " + tipoReal,
+                                            Toast.LENGTH_LONG).show();
+                                    return;
+                                }
+
+                                SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+                                prefs.edit().putString(KEY_TIPO_USUARIO, tipoReal).apply();
+
+                                Intent intentDestino = TIPO_GUARDIAN.equals(tipoReal)
+                                        ? new Intent(pantalla_login.this, PantallaGuardian.class)
+                                        : new Intent(pantalla_login.this, PantallaJuegos.class);
+
+                                Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show();
+                                startActivity(intentDestino);
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                btnIniciarSesion.setEnabled(true);
+                                String detalle = e.getMessage();
+                                if (e instanceof FirebaseFirestoreException) {
+                                    FirebaseFirestoreException firestoreException = (FirebaseFirestoreException) e;
+                                    detalle = "[" + firestoreException.getCode() + "] " + detalle;
+                                }
+                                Toast.makeText(this, "Error al leer perfil: " + detalle, Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    btnIniciarSesion.setEnabled(true);
+                    String detalle = e.getMessage();
+                    if (e instanceof FirebaseAuthException) {
+                        String code = ((FirebaseAuthException) e).getErrorCode();
+                        detalle = "[" + code + "] " + detalle;
+                    }
+                    Toast.makeText(this, "Error de login: " + detalle, Toast.LENGTH_LONG).show();
+                });
     }
 }
