@@ -203,6 +203,16 @@ public class pantalla_registro extends BaseActivity {
                             .document(uid)
                             .set(perfil)
                             .addOnSuccessListener(unused -> {
+                            if (TIPO_GUARDIAN.equals(tipoUsuario)) {
+                                Map<String, Object> configuracion = new HashMap<>();
+                                configuracion.put("guardianRegistrado", true);
+                                configuracion.put("guardianUid", uid);
+                                configuracion.put("actualizadoEn", FieldValue.serverTimestamp());
+
+                                firestore.document("configuracion/registro_general")
+                                    .set(configuracion);
+                            }
+
                                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                                         .edit()
                                         .putString(KEY_TIPO_USUARIO, tipoUsuario)

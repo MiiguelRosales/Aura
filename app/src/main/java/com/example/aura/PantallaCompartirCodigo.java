@@ -27,6 +27,7 @@ public class PantallaCompartirCodigo extends BaseActivity {
 
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
+    private static final String DOC_CONFIGURACION = "configuracion/registro_general";
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -109,12 +110,11 @@ public class PantallaCompartirCodigo extends BaseActivity {
     private void verificarGuardianRegistrado(String exploradorId,
                                              EditText etCodigoVincular,
                                              MaterialButton btnCompartir) {
-        firestore.collection("usuarios")
-                .whereEqualTo("tipoUsuario", TIPO_GUARDIAN)
-                .limit(1)
+        firestore.document(DOC_CONFIGURACION)
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (querySnapshot.isEmpty()) {
+                .addOnSuccessListener(configDoc -> {
+                    Boolean guardianRegistrado = configDoc.getBoolean("guardianRegistrado");
+                    if (guardianRegistrado == null || !guardianRegistrado) {
                         etCodigoVincular.setText("Registra un Guardián primero");
                         Toast.makeText(this,
                                 "No hay Guardián registrado aún", Toast.LENGTH_LONG).show();
@@ -129,7 +129,7 @@ public class PantallaCompartirCodigo extends BaseActivity {
                 .addOnFailureListener(e -> {
                     etCodigoVincular.setText("No se pudo validar Guardián");
                     Toast.makeText(this,
-                            "Error al consultar usuarios", Toast.LENGTH_SHORT).show();
+                            "Error al consultar configuración", Toast.LENGTH_SHORT).show();
                 });
     }
 

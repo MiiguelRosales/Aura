@@ -22,6 +22,22 @@
         android:scaleType="fitCenter"
         android:src="@drawable/flechaizquierda" />
 
+    <!-- NOMBRE DEL EXPLORADOR VINCULADO -->
+    <TextView
+        android:id="@+id/tvNombreExploradorVinculado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@id/imageButtonRegresarGuardian"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="38dp"
+        android:fontFamily="@font/caveat_brush"
+        android:text="Explorador: Cargando..."
+        android:textColor="@color/aura_text_hint"
+        android:textSize="16sp"
+        android:gravity="center_vertical" />
+
     <!-- TÍTULO -->
     <TextView
         android:id="@+id/tvTituloGuardian"

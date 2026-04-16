@@ -41,6 +41,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import com.google.firebase.Timestamp;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +52,8 @@ public class PantallaJuegos extends BaseActivity {
     private static final String CHANNEL_ID = "juego_notificaciones";
     private static final int NOTIFICATION_ID = 1;
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
+    private static final String PREFS_AURA = "AuraPrefs";
+    private static final String KEY_EXPLORADOR_VINCULADO_ID = "exploradorVinculadoId";
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<String> requestLocationPermissionLauncher;
@@ -60,6 +65,8 @@ public class PantallaJuegos extends BaseActivity {
     private LocationCallback locationCallback;
     private String exploradorUid;
     private String codigoExplorador;
+    private String nombreExplorador;
+    private String guardianVinculadoId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
@@ -185,6 +192,9 @@ public class PantallaJuegos extends BaseActivity {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
             Toast.makeText(this, "¡Juego Completado!", Toast.LENGTH_SHORT).show();
         }
+
+        // Enviar mensaje al Guardián vinculado
+        enviarMensajeAlGuardian();
     }
 
     private void configurarSolicitudUbicacion() {
@@ -276,6 +286,14 @@ public class PantallaJuegos extends BaseActivity {
                     }
 
                     codigoExplorador = documentSnapshot.getString("codigoExplorador");
+                    nombreExplorador = documentSnapshot.getString("nombreUsuario");
+                    guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                    
+                    android.util.Log.d("PantallaJuegos", "Explorador: " + nombreExplorador + 
+                            ", Guardian vinculado: " + guardianVinculadoId);
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("PantallaJuegos", "Error leyendo perfil", e);
                 });
     }
 
@@ -292,5 +310,63 @@ public class PantallaJuegos extends BaseActivity {
     protected void onPause() {
         detenerPublicacionUbicacion();
         super.onPause();
+    }
+
+    private void enviarMensajeAlGuardian() {
+        // Si no hay guardián vinculado, no enviar mensaje
+        if (guardianVinculadoId == null || guardianVinculadoId.trim().isEmpty()) {
+            android.util.Log.w("PantallaJuegos", "No hay guardián vinculado");
+            return;
+        }
+
+        android.util.Log.d("PantallaJuegos", "Enviando mensaje al guardián: " + guardianVinculadoId);
+
+        // Obtener el nombre del guardián para personalizar el mensaje
+        firestore.collection("usuarios")
+                .document(guardianVinculadoId)
+                .get()
+                .addOnSuccessListener(guardianDoc -> {
+                    String nombreGuardian = guardianDoc.getString("nombreUsuario");
+                    if (nombreGuardian == null) {
+                        nombreGuardian = "Guardián";
+                    }
+
+                    // Crear mensaje
+                    Map<String, Object> mensaje = new HashMap<>();
+                    mensaje.put("remitente", nombreExplorador != null ? nombreExplorador : "Explorador");
+                    mensaje.put("contenido", "Hola " + nombreGuardian);
+                    mensaje.put("timestamp", FieldValue.serverTimestamp());
+                    mensaje.put("tipo", "juego_iniciado");
+
+                    // Guardar en historial del guardián
+                    String messageId = firestore.collection("mensajes")
+                            .document(guardianVinculadoId)
+                            .collection("historial")
+                            .document().getId();
+
+                    firestore.collection("mensajes")
+                            .document(guardianVinculadoId)
+                            .collection("historial")
+                            .document(messageId)
+                            .set(mensaje)
+                            .addOnSuccessListener(aVoid -> {
+                                android.util.Log.d("PantallaJuegos", 
+                                        "Mensaje guardado exitosamente: " + messageId);
+                            })
+                            .addOnFailureListener(e -> {
+                                android.util.Log.e("PantallaJuegos", 
+                                        "Error al guardar mensaje", e);
+                                Toast.makeText(PantallaJuegos.this, 
+                                        "Error al enviar mensaje: " + e.getMessage(), 
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("PantallaJuegos", 
+                            "Error leyendo perfil del guardián", e);
+                    Toast.makeText(PantallaJuegos.this, 
+                            "No se pudo leer perfil del Guardián", 
+                            Toast.LENGTH_SHORT).show();
+                });
     }
 }

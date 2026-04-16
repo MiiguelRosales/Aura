@@ -38,6 +38,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,9 +64,11 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
     private List<String> notificaciones;
     private ArrayAdapter<String> adapterNotificaciones;
     private TextView tvActualizacion;
+    private TextView tvNombreExploradorVinculado;
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
     private ListenerRegistration listenerUbicacionExplorador;
+    private ListenerRegistration listenerMensajes;
 
     private ConnectivityManager connectivityManager;
     private ConnectivityManager.NetworkCallback networkCallback;
@@ -91,6 +94,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         mapView.getMapAsync(this);
 
         tvActualizacion = findViewById(R.id.tvUltimaActualizacion);
+        tvNombreExploradorVinculado = findViewById(R.id.tvNombreExploradorVinculado);
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
@@ -151,6 +155,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         }
 
         iniciarEscuchaUbicacionExplorador();
+        iniciarEscuchaMensajes();
     }
 
     private void registrarMonitoreoInternet() {
@@ -167,7 +172,16 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
             @Override
             public void onAvailable(@NonNull Network network) {
                 internetDisponible = true;
-                runOnUiThread(() -> iniciarEscuchaUbicacionExplorador());
+                runOnUiThread(() -> {
+                    // Mostrar ubicación en caché mientras se reconecta
+                    LatLng guardada = obtenerUbicacionGuardada();
+                    if (guardada != null) {
+                        mostrarUbicacionEnMapa(guardada, "Reconectando...");
+                    }
+                    // Reintentar escucha de ubicación
+                    iniciarEscuchaUbicacionExplorador();
+                    iniciarEscuchaMensajes();
+                });
             }
 
             @Override
@@ -176,7 +190,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                 runOnUiThread(() -> {
                     LatLng guardada = obtenerUbicacionGuardada();
                     if (guardada != null) {
-                        mostrarUbicacionEnMapa(guardada, "Sin internet · última del Explorador");
+                        mostrarUbicacionEnMapa(guardada, "Sin internet · última ubicación conocida");
                     } else {
                         tvActualizacion.setText("Sin internet y sin datos guardados");
                     }
@@ -212,6 +226,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                     String exploradorId = guardianDoc.getString("exploradorVinculadoId");
                     if (exploradorId == null || exploradorId.trim().isEmpty()) {
                         tvActualizacion.setText("No hay Explorador vinculado");
+                        tvNombreExploradorVinculado.setText("Explorador: Sin vincular");
                         return;
                     }
 
@@ -220,7 +235,24 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                             .putString(KEY_EXPLORADOR_VINCULADO_ID, exploradorId)
                             .apply();
 
-                    escucharUbicacionExplorador(exploradorId);
+                    // Obtener el nombre del Explorador
+                    firestore.collection("usuarios")
+                            .document(exploradorId)
+                            .get()
+                            .addOnSuccessListener(exploradorDoc -> {
+                                String nombreExplorador = exploradorDoc.getString("nombreUsuario");
+                                if (nombreExplorador != null) {
+                                    tvNombreExploradorVinculado.setText("🌟 Explorador: " + nombreExplorador);
+                                } else {
+                                    tvNombreExploradorVinculado.setText("🌟 Explorador: Desconocido");
+                                }
+                                escucharUbicacionExplorador(exploradorId);
+                            })
+                            .addOnFailureListener(e -> {
+                                android.util.Log.e("PantallaGuardian", "Error leyendo Explorador", e);
+                                tvNombreExploradorVinculado.setText("🌟 Explorador: Error");
+                                escucharUbicacionExplorador(exploradorId);
+                            });
                 })
                 .addOnFailureListener(e -> tvActualizacion.setText("No se pudo leer la vinculación"));
     }
@@ -251,6 +283,67 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         }
     }
 
+    private void iniciarEscuchaMensajes() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) {
+            android.util.Log.w("PantallaGuardian", "Usuario no autenticado");
+            return;
+        }
+
+        String guardianUid = user.getUid();
+        android.util.Log.d("PantallaGuardian", "Iniciando escucha de mensajes para: " + guardianUid);
+        
+        // Detener escucha anterior si existe
+        if (listenerMensajes != null) {
+            listenerMensajes.remove();
+        }
+
+        // Escuchar nuevos mensajes ordenados por timestamp descendente
+        listenerMensajes = firestore.collection("mensajes")
+                .document(guardianUid)
+                .collection("historial")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshot, error) -> {
+                    if (error != null) {
+                        android.util.Log.e("PantallaGuardian", "Error en listener de mensajes", error);
+                        return;
+                    }
+
+                    if (snapshot != null) {
+                        android.util.Log.d("PantallaGuardian", "Mensajes recibidos: " + snapshot.size());
+                        
+                        if (!snapshot.isEmpty()) {
+                            notificaciones.clear();
+                            for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                                String remitente = doc.getString("remitente");
+                                String contenido = doc.getString("contenido");
+                                Timestamp ts = doc.getTimestamp("timestamp");
+                                
+                                android.util.Log.d("PantallaGuardian", 
+                                        "Mensaje: " + remitente + " - " + contenido);
+                                
+                                if (contenido != null) {
+                                    String hora = ts != null ? formatearFechaActualizacion(ts.toDate()) : "";
+                                    String mensaje = (remitente != null ? remitente + ": " : "") + 
+                                                   contenido + " · " + hora;
+                                    notificaciones.add(mensaje);
+                                }
+                            }
+                            adapterNotificaciones.notifyDataSetChanged();
+                        } else {
+                            android.util.Log.d("PantallaGuardian", "Sin mensajes");
+                        }
+                    }
+                });
+    }
+
+    private void detenerEscuchaMensajes() {
+        if (listenerMensajes != null) {
+            listenerMensajes.remove();
+            listenerMensajes = null;
+        }
+    }
+
     private void procesarUbicacionExplorador(@NonNull DocumentSnapshot snapshot) {
         Double lat = snapshot.getDouble("lat");
         Double lng = snapshot.getDouble("lng");
@@ -264,6 +357,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         Timestamp ts = snapshot.getTimestamp("actualizadoEn");
         String estado = ts != null ? formatearFechaActualizacion(ts.toDate()) : "Actualizado";
 
+        // IMPORTANTE: Guardar SIEMPRE en caché offline
         guardarUbicacion(ubicacionExplorador, estado);
         mostrarUbicacionEnMapa(ubicacionExplorador, estado);
     }
@@ -328,18 +422,21 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         super.onResume();
         mapView.onResume();
         iniciarEscuchaUbicacionExplorador();
+        iniciarEscuchaMensajes();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         detenerEscuchaUbicacionExplorador();
+        detenerEscuchaMensajes();
         mapView.onPause();
     }
 
     @Override
     protected void onDestroy() {
         detenerEscuchaUbicacionExplorador();
+        detenerEscuchaMensajes();
 
         if (connectivityManager != null && networkCallback != null) {
             connectivityManager.unregisterNetworkCallback(networkCallback);

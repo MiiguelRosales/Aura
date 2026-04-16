@@ -113,6 +113,30 @@
                 android:textColor="@color/aura_subtitle_color"
                 android:textSize="22sp" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <CheckBox
+                    android:id="@+id/cbGuardarInicioSesion"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:buttonTint="@color/aura_btn_fill" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/caveat_brush"
+                    android:text="Guardar inicio de sesión"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnIniciarSesion"
                 android:layout_width="match_parent"

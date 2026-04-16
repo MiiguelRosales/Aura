@@ -125,6 +125,7 @@ public class PantallaVincular extends BaseActivity {
                             .putString(KEY_CODIGO_VINCULADO, codigo)
                             .apply();
 
+                    // Actualizar perfil del Guardián
                     firestore.collection("usuarios")
                             .document(guardianUid)
                             .update(
@@ -133,9 +134,21 @@ public class PantallaVincular extends BaseActivity {
                                     "vinculadoEn", FieldValue.serverTimestamp()
                             )
                             .addOnSuccessListener(unused -> {
-                                Toast.makeText(this, "Vinculación exitosa", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(PantallaVincular.this, PantallaGuardian.class));
-                                finish();
+                                // TAMBIEN: Actualizar perfil del Explorador con ID del Guardián
+                                firestore.collection("usuarios")
+                                        .document(exploradorId)
+                                        .update(
+                                                "guardianVinculadoId", guardianUid,
+                                                "vinculadoEn", FieldValue.serverTimestamp()
+                                        )
+                                        .addOnSuccessListener(unused2 -> {
+                                            Toast.makeText(this, "Vinculación exitosa", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(PantallaVincular.this, PantallaGuardian.class));
+                                            finish();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(this, "Error al guardar en Explorador", Toast.LENGTH_SHORT).show();
+                                        });
                             })
                             .addOnFailureListener(e -> Toast.makeText(this,
                                     "No se pudo guardar la vinculación", Toast.LENGTH_SHORT).show());

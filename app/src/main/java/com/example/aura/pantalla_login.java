@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -21,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,6 +30,9 @@ public class pantalla_login extends BaseActivity {
 
     private static final String PREFS_NAME = "AuraPrefs";
     private static final String KEY_TIPO_USUARIO = "tipoUsuario";
+    private static final String KEY_GUARDAR_LOGIN = "guardarLogin";
+    private static final String KEY_CORREO_LOGIN = "correoLogin";
+    private static final String KEY_CONTRASENA_LOGIN = "contrasenaLogin";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
 
@@ -53,6 +58,7 @@ public class pantalla_login extends BaseActivity {
         EditText etCorreo = findViewById(R.id.etCorreoLogin);
         EditText etContrasena = findViewById(R.id.etContrasenaLogin);
         AutoCompleteTextView actvTipoUsuarioLogin = findViewById(R.id.actvTipoUsuarioLogin);
+        CheckBox cbGuardarInicioSesion = findViewById(R.id.cbGuardarInicioSesion);
         MaterialButton btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
         TextView tvDatosDemo = findViewById(R.id.tvDatosDemo);
 
@@ -64,11 +70,20 @@ public class pantalla_login extends BaseActivity {
         actvTipoUsuarioLogin.setAdapter(adapterTipo);
 
         SharedPreferences prefsTipo = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         String tipoGuardado = prefsTipo.getString(KEY_TIPO_USUARIO, TIPO_EXPLORADOR);
         if (TIPO_GUARDIAN.equals(tipoGuardado)) {
             actvTipoUsuarioLogin.setText(tiposUsuario[0], false);
         } else {
             actvTipoUsuarioLogin.setText(tiposUsuario[1], false);
+        }
+
+        // Auto-marcar checkbox si está guardado
+        boolean guardarLoginGuardado = prefs.getBoolean(KEY_GUARDAR_LOGIN, false);
+        if (guardarLoginGuardado) {
+            etCorreo.setText(prefs.getString(KEY_CORREO_LOGIN, ""));
+            etContrasena.setText(prefs.getString(KEY_CONTRASENA_LOGIN, ""));
+            cbGuardarInicioSesion.setChecked(true);
         }
 
         actvTipoUsuarioLogin.setOnItemClickListener((parent, view, position, id) -> {
@@ -86,6 +101,35 @@ public class pantalla_login extends BaseActivity {
         btnRegresar.setOnClickListener(v -> {
             startActivity(new Intent(pantalla_login.this, pantalla_inicio.class));
             finish();
+        });
+
+        cbGuardarInicioSesion.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            String correo = etCorreo.getText().toString().trim();
+            String contrasena = etContrasena.getText().toString().trim();
+
+            if (isChecked) {
+                if (TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
+                    cbGuardarInicioSesion.setChecked(false);
+                    Toast.makeText(this, "Completa correo y contraseña primero", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                prefs.edit()
+                        .putBoolean(KEY_GUARDAR_LOGIN, true)
+                        .putString(KEY_CORREO_LOGIN, correo)
+                        .putString(KEY_CONTRASENA_LOGIN, contrasena)
+                        .apply();
+
+                Toast.makeText(this, "Inicio de sesión guardado", Toast.LENGTH_SHORT).show();
+            } else {
+                prefs.edit()
+                        .putBoolean(KEY_GUARDAR_LOGIN, false)
+                        .remove(KEY_CORREO_LOGIN)
+                        .remove(KEY_CONTRASENA_LOGIN)
+                        .apply();
+
+                Toast.makeText(this, "Credenciales olvidadas", Toast.LENGTH_SHORT).show();
+            }
         });
 
         btnIniciarSesion.setOnClickListener(v -> {
@@ -145,6 +189,15 @@ public class pantalla_login extends BaseActivity {
 
                                 SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
                                 prefs.edit().putString(KEY_TIPO_USUARIO, tipoReal).apply();
+
+                                if (TIPO_GUARDIAN.equals(tipoReal)) {
+                                    firestore.document("configuracion/registro_general")
+                                            .set(new java.util.HashMap<String, Object>() {{
+                                                put("guardianRegistrado", true);
+                                                put("guardianUid", uid);
+                                                put("actualizadoEn", FieldValue.serverTimestamp());
+                                            }});
+                                }
 
                                 Intent intentDestino = TIPO_GUARDIAN.equals(tipoReal)
                                         ? new Intent(pantalla_login.this, PantallaGuardian.class)
