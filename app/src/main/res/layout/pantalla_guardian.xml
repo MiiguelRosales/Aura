@@ -187,9 +187,9 @@
 
                 </LinearLayout>
 
-                <!-- MapView ocupa el resto de la card -->
-                <com.google.android.gms.maps.MapView
-                    android:id="@+id/mapViewGuardian"
+                <!-- WebView de OpenStreetMap ocupa el resto de la card -->
+                <WebView
+                    android:id="@+id/webViewGuardian"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"

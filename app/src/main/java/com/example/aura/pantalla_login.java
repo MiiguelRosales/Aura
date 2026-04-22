@@ -94,9 +94,9 @@ public class pantalla_login extends BaseActivity {
                     .apply();
         });
 
-        Glide.with(this)
-                .load(R.drawable.pantalla_registro)
-                .into(ivFondo);
+//        Glide.with(this)
+//                .load(R.drawable.pantalla_registro)
+//                .into(ivFondo);
 
         btnRegresar.setOnClickListener(v -> {
             startActivity(new Intent(pantalla_login.this, pantalla_inicio.class));

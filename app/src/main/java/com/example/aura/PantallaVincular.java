@@ -55,9 +55,9 @@ public class PantallaVincular extends BaseActivity {
         final MaterialButton btnAceptarVinculo = findViewById(R.id.btnAceptarVinculo);
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
-        Glide.with(this)
-                .load(R.drawable.pantalla_vincular)
-                .into(ivFondoGifVincular);
+//        Glide.with(this)
+//                .load(R.drawable.pantalla_vincular)
+//                .into(ivFondoGifVincular);
 
         btnAceptarVinculo.setOnClickListener(v -> {
             String codigo = etCodigoVincular.getText().toString().trim().toUpperCase();

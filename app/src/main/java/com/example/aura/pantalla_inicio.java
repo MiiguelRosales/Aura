@@ -98,9 +98,9 @@ public class pantalla_inicio extends AppCompatActivity {
         handler.postDelayed(runnable, 2000);
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
-        Glide.with(this)
-                .load(R.drawable.pantalla_vincular)
-                .into(ivFondo);
+//        Glide.with(this)
+//                .load(R.drawable.pantalla_vincular)
+//                .into(ivFondo);
 
         // TOGGLE DE TEMA (sol / luna)
         final FrameLayout layoutToggle = findViewById(R.id.layoutThemeToggle);

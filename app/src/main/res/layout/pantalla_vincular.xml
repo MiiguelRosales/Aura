@@ -13,8 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="centerCrop"
-        android:visibility="gone"
-        tools:src="@drawable/pantalla_vincular" />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvTituloVincular"

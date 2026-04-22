@@ -12,8 +12,7 @@
         android:id="@+id/ivFondoGifLogin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        tools:src="@drawable/pantalla_registro" />
+        android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/tvTituloLogin"

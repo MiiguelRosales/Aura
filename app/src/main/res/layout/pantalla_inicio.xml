@@ -12,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@null"
-        android:scaleType="centerCrop"
-        tools:src="@drawable/pantalla_vincular" />
+        android:scaleType="centerCrop" />
 
     <View
         android:layout_width="match_parent"

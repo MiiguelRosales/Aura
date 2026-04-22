@@ -10,6 +10,9 @@ import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -24,14 +27,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.Timestamp;
@@ -46,20 +41,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback {
+public class PantallaGuardian extends BaseActivity {
 
     private static final String PREFS_AURA = "AuraPrefs";
     private static final String PREFS_UBICACION = "guardian_ubicacion_explorador";
     private static final String KEY_EXPLORADOR_VINCULADO_ID = "exploradorVinculadoId";
+    private static final String KEY_CODIGO_VINCULADO = "codigoVinculado";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String KEY_LAT = "lat";
     private static final String KEY_LNG = "lng";
     private static final String KEY_ESTADO = "estado";
-    private static final float ZOOM_MAPA = 15f;
+    private static final int ZOOM_MAPA = 15;
 
-    private MapView mapView;
-    private GoogleMap googleMap;
-    private Marker markerUltimaUbicacion;
+    private WebView mapWebView;
     private ListView listViewNotificaciones;
     private List<String> notificaciones;
     private ArrayAdapter<String> adapterNotificaciones;
@@ -74,7 +68,18 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
     private ConnectivityManager.NetworkCallback networkCallback;
     private boolean internetDisponible = true;
 
-    private static final LatLng ULTIMA_UBICACION = new LatLng(19.4326, -99.1332);
+    private static final double ULTIMA_LAT = 19.4326;
+    private static final double ULTIMA_LNG = -99.1332;
+
+    private static class PuntoMapa {
+        final double lat;
+        final double lng;
+
+        PuntoMapa(double lat, double lng) {
+            this.lat = lat;
+            this.lng = lng;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,10 +93,9 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
             return insets;
         });
 
-        // ── MapView ──────────────────────────────────────────────────
-        mapView = findViewById(R.id.mapViewGuardian);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
+        // ── Mapa OpenStreetMap en WebView (sin dependencia de API key) ──
+        mapWebView = findViewById(R.id.webViewGuardian);
+        configurarWebViewMapa();
 
         tvActualizacion = findViewById(R.id.tvUltimaActualizacion);
         tvNombreExploradorVinculado = findViewById(R.id.tvNombreExploradorVinculado);
@@ -137,25 +141,44 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
             startActivity(new Intent(PantallaGuardian.this, pantalla_inicio.class));
             finish();
         });
-    }
 
-    // ── Callback mapa listo ───────────────────────────────────────────
-    @Override
-    public void onMapReady(@NonNull GoogleMap map) {
-        googleMap = map;
-        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        googleMap.getUiSettings().setZoomControlsEnabled(true);
-        googleMap.getUiSettings().setCompassEnabled(true);
-
-        LatLng ubicacionInicial = obtenerUbicacionGuardada();
+        PuntoMapa ubicacionInicial = obtenerUbicacionGuardada();
         if (ubicacionInicial != null) {
             mostrarUbicacionEnMapa(ubicacionInicial, obtenerEstadoGuardado("Última ubicación guardada"));
         } else {
-            mostrarUbicacionEnMapa(ULTIMA_UBICACION, "Sin vínculo activo");
+            mostrarUbicacionEnMapa(new PuntoMapa(ULTIMA_LAT, ULTIMA_LNG), "Sin vínculo activo");
         }
 
         iniciarEscuchaUbicacionExplorador();
         iniciarEscuchaMensajes();
+    }
+
+    private void configurarWebViewMapa() {
+        if (mapWebView == null) {
+            return;
+        }
+
+        mapWebView.setWebViewClient(new WebViewClient());
+        WebSettings settings = mapWebView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setDisplayZoomControls(false);
+    }
+
+    private String construirUrlMapa(double lat, double lng) {
+        double delta = 0.008;
+        double minLng = lng - delta;
+        double minLat = lat - delta;
+        double maxLng = lng + delta;
+        double maxLat = lat + delta;
+
+        String bbox = String.format(Locale.US, "%f,%f,%f,%f", minLng, minLat, maxLng, maxLat)
+                .replace(",", "%2C");
+        String marker = String.format(Locale.US, "%f%%2C%f", lat, lng);
+        return "https://www.openstreetmap.org/export/embed.html?bbox=" + bbox
+                + "&layer=mapnik&marker=" + marker + "#map=" + ZOOM_MAPA + "/"
+                + String.format(Locale.US, "%.6f", lat) + "/" + String.format(Locale.US, "%.6f", lng);
     }
 
     private void registrarMonitoreoInternet() {
@@ -174,7 +197,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                 internetDisponible = true;
                 runOnUiThread(() -> {
                     // Mostrar ubicación en caché mientras se reconecta
-                    LatLng guardada = obtenerUbicacionGuardada();
+                    PuntoMapa guardada = obtenerUbicacionGuardada();
                     if (guardada != null) {
                         mostrarUbicacionEnMapa(guardada, "Reconectando...");
                     }
@@ -188,7 +211,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
             public void onLost(@NonNull Network network) {
                 internetDisponible = false;
                 runOnUiThread(() -> {
-                    LatLng guardada = obtenerUbicacionGuardada();
+                    PuntoMapa guardada = obtenerUbicacionGuardada();
                     if (guardada != null) {
                         mostrarUbicacionEnMapa(guardada, "Sin internet · última ubicación conocida");
                     } else {
@@ -224,37 +247,72 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                     }
 
                     String exploradorId = guardianDoc.getString("exploradorVinculadoId");
+                    if (exploradorId != null && !exploradorId.trim().isEmpty()) {
+                        cargarExploradorVinculado(exploradorId);
+                        return;
+                    }
+
+                    String codigoVinculado = guardianDoc.getString(KEY_CODIGO_VINCULADO);
+                    if (codigoVinculado == null || codigoVinculado.trim().isEmpty()) {
+                        tvActualizacion.setText("No hay Explorador vinculado");
+                        tvNombreExploradorVinculado.setText("Explorador: Sin vincular");
+                        return;
+                    }
+
+                    resolverExploradorPorCodigo(guardianUid, codigoVinculado);
+                })
+                .addOnFailureListener(e -> tvActualizacion.setText("No se pudo leer la vinculación"));
+    }
+
+    private void resolverExploradorPorCodigo(@NonNull String guardianUid, @NonNull String codigoVinculado) {
+        firestore.collection("vinculos")
+                .document(codigoVinculado)
+                .get()
+                .addOnSuccessListener(vinculoDoc -> {
+                    String exploradorId = vinculoDoc.getString("exploradorId");
                     if (exploradorId == null || exploradorId.trim().isEmpty()) {
                         tvActualizacion.setText("No hay Explorador vinculado");
                         tvNombreExploradorVinculado.setText("Explorador: Sin vincular");
                         return;
                     }
 
-                    getSharedPreferences(PREFS_AURA, MODE_PRIVATE)
-                            .edit()
-                            .putString(KEY_EXPLORADOR_VINCULADO_ID, exploradorId)
-                            .apply();
-
-                    // Obtener el nombre del Explorador
+                    // Normaliza datos del guardián para siguientes sesiones.
                     firestore.collection("usuarios")
-                            .document(exploradorId)
-                            .get()
-                            .addOnSuccessListener(exploradorDoc -> {
-                                String nombreExplorador = exploradorDoc.getString("nombreUsuario");
-                                if (nombreExplorador != null) {
-                                    tvNombreExploradorVinculado.setText("🌟 Explorador: " + nombreExplorador);
-                                } else {
-                                    tvNombreExploradorVinculado.setText("🌟 Explorador: Desconocido");
-                                }
-                                escucharUbicacionExplorador(exploradorId);
-                            })
-                            .addOnFailureListener(e -> {
-                                android.util.Log.e("PantallaGuardian", "Error leyendo Explorador", e);
-                                tvNombreExploradorVinculado.setText("🌟 Explorador: Error");
-                                escucharUbicacionExplorador(exploradorId);
-                            });
+                            .document(guardianUid)
+                            .update(KEY_EXPLORADOR_VINCULADO_ID, exploradorId);
+
+                    cargarExploradorVinculado(exploradorId);
                 })
-                .addOnFailureListener(e -> tvActualizacion.setText("No se pudo leer la vinculación"));
+                .addOnFailureListener(e -> {
+                    tvActualizacion.setText("No se pudo resolver la vinculación");
+                    tvNombreExploradorVinculado.setText("Explorador: Sin vincular");
+                });
+    }
+
+    private void cargarExploradorVinculado(@NonNull String exploradorId) {
+        getSharedPreferences(PREFS_AURA, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_EXPLORADOR_VINCULADO_ID, exploradorId)
+                .apply();
+
+        // Obtener el nombre del Explorador
+        firestore.collection("usuarios")
+                .document(exploradorId)
+                .get()
+                .addOnSuccessListener(exploradorDoc -> {
+                    String nombreExplorador = exploradorDoc.getString("nombreUsuario");
+                    if (nombreExplorador != null) {
+                        tvNombreExploradorVinculado.setText("🌟 Explorador: " + nombreExplorador);
+                    } else {
+                        tvNombreExploradorVinculado.setText("🌟 Explorador: Desconocido");
+                    }
+                    escucharUbicacionExplorador(exploradorId);
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("PantallaGuardian", "Error leyendo Explorador", e);
+                    tvNombreExploradorVinculado.setText("🌟 Explorador: Error");
+                    escucharUbicacionExplorador(exploradorId);
+                });
     }
 
     private void escucharUbicacionExplorador(@NonNull String exploradorId) {
@@ -268,12 +326,28 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
                     }
 
                     if (snapshot == null || !snapshot.exists()) {
-                        tvActualizacion.setText("Explorador sin ubicación publicada");
+                        buscarUbicacionPorCampoExplorador(exploradorId);
                         return;
                     }
 
                     procesarUbicacionExplorador(snapshot);
                 });
+    }
+
+    private void buscarUbicacionPorCampoExplorador(@NonNull String exploradorId) {
+        firestore.collection("ubicaciones_explorador")
+                .whereEqualTo("exploradorId", exploradorId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (query.isEmpty()) {
+                        tvActualizacion.setText("Explorador sin ubicación publicada");
+                        return;
+                    }
+
+                    procesarUbicacionExplorador(query.getDocuments().get(0));
+                })
+                .addOnFailureListener(e -> tvActualizacion.setText("Error consultando ubicación"));
     }
 
     private void detenerEscuchaUbicacionExplorador() {
@@ -353,7 +427,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
             return;
         }
 
-        LatLng ubicacionExplorador = new LatLng(lat, lng);
+        PuntoMapa ubicacionExplorador = new PuntoMapa(lat, lng);
         Timestamp ts = snapshot.getTimestamp("actualizadoEn");
         String estado = ts != null ? formatearFechaActualizacion(ts.toDate()) : "Actualizado";
 
@@ -362,34 +436,25 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         mostrarUbicacionEnMapa(ubicacionExplorador, estado);
     }
 
-    private void mostrarUbicacionEnMapa(@NonNull LatLng ubicacion, @NonNull String estado) {
-        if (googleMap == null) {
+    private void mostrarUbicacionEnMapa(@NonNull PuntoMapa ubicacion, @NonNull String estado) {
+        if (mapWebView == null) {
             return;
         }
 
-        if (markerUltimaUbicacion == null) {
-            markerUltimaUbicacion = googleMap.addMarker(new MarkerOptions()
-                    .position(ubicacion)
-                    .title("Última ubicación del Explorador")
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE)));
-        } else {
-            markerUltimaUbicacion.setPosition(ubicacion);
-        }
-
-        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(ubicacion, ZOOM_MAPA));
+        mapWebView.loadUrl(construirUrlMapa(ubicacion.lat, ubicacion.lng));
         tvActualizacion.setText(estado);
     }
 
-    private void guardarUbicacion(@NonNull LatLng ubicacion, @NonNull String estado) {
+    private void guardarUbicacion(@NonNull PuntoMapa ubicacion, @NonNull String estado) {
         SharedPreferences prefs = getSharedPreferences(PREFS_UBICACION, MODE_PRIVATE);
         prefs.edit()
-                .putString(KEY_LAT, String.valueOf(ubicacion.latitude))
-                .putString(KEY_LNG, String.valueOf(ubicacion.longitude))
+                .putString(KEY_LAT, String.valueOf(ubicacion.lat))
+                .putString(KEY_LNG, String.valueOf(ubicacion.lng))
                 .putString(KEY_ESTADO, estado)
                 .apply();
     }
 
-    private LatLng obtenerUbicacionGuardada() {
+    private PuntoMapa obtenerUbicacionGuardada() {
         SharedPreferences prefs = getSharedPreferences(PREFS_UBICACION, MODE_PRIVATE);
         String lat = prefs.getString(KEY_LAT, null);
         String lng = prefs.getString(KEY_LNG, null);
@@ -399,7 +464,7 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         }
 
         try {
-            return new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+            return new PuntoMapa(Double.parseDouble(lat), Double.parseDouble(lng));
         } catch (NumberFormatException e) {
             return null;
         }
@@ -420,7 +485,9 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
     @Override
     protected void onResume() {
         super.onResume();
-        mapView.onResume();
+        if (mapWebView != null) {
+            mapWebView.onResume();
+        }
         iniciarEscuchaUbicacionExplorador();
         iniciarEscuchaMensajes();
     }
@@ -430,7 +497,9 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         super.onPause();
         detenerEscuchaUbicacionExplorador();
         detenerEscuchaMensajes();
-        mapView.onPause();
+        if (mapWebView != null) {
+            mapWebView.onPause();
+        }
     }
 
     @Override
@@ -443,18 +512,13 @@ public class PantallaGuardian extends BaseActivity implements OnMapReadyCallback
         }
 
         super.onDestroy();
-        mapView.onDestroy();
+        if (mapWebView != null) {
+            mapWebView.destroy();
+        }
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        mapView.onLowMemory();
-    }
-
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mapView.onSaveInstanceState(outState);
     }
 }

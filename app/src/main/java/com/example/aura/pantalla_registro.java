@@ -71,9 +71,9 @@ public class pantalla_registro extends BaseActivity {
         final EditText etConfirmarContrasena = findViewById(R.id.etConfirmarContrasena);
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
-        Glide.with(this)
-                .load(R.drawable.pantalla_registro) // Tu archivo webp animado
-                .into(ivFondoGif);
+//        Glide.with(this)
+//                .load(R.drawable.pantalla_registro) // Tu archivo webp animado
+//                .into(ivFondoGif);
 
         //DROPDOWN DOMINIO DE CORREO
         final String[] dominios = {"gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com"};
