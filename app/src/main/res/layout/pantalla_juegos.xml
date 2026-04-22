@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:scaleType="centerCrop"
-        tools:src="@drawable/registro" />
+        android:scaleType="centerCrop" />
 
     <ImageButton
         android:id="@+id/imageButtonRegresar"
@@ -62,7 +61,10 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="36dp"
         android:fontFamily="@font/caveat_brush"
-        android:text="JUGAR"
+        android:enabled="false"
+        android:clickable="false"
+        android:alpha="0.5"
+        android:text="Listo"
         android:textColor="@color/white"
         android:textSize="28sp"
         android:paddingStart="40dp"
@@ -71,6 +73,24 @@
         app:cornerRadius="28dp"
         app:strokeColor="@color/aura_btn_stroke"
         app:strokeWidth="1dp" />
+
+    <TextView
+        android:id="@+id/tvContadorListo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/imageButtonRegresar"
+        android:layout_alignBottom="@id/imageButtonRegresar"
+        android:layout_toEndOf="@id/imageButtonRegresar"
+        android:layout_toStartOf="@id/btnConfiguracionJuegos"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:fontFamily="@font/caveat_brush"
+        android:text="Tiempo para confirmar: 02:00"
+        android:textColor="@color/aura_text_hint"
+        android:textSize="20sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardViewJuegos"

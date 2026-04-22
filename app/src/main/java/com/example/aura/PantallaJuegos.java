@@ -9,18 +9,19 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Looper;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -29,7 +30,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -41,10 +41,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import com.google.firebase.Timestamp;
-
-import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class PantallaJuegos extends BaseActivity {
@@ -52,8 +50,9 @@ public class PantallaJuegos extends BaseActivity {
     private static final String CHANNEL_ID = "juego_notificaciones";
     private static final int NOTIFICATION_ID = 1;
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
-    private static final String PREFS_AURA = "AuraPrefs";
-    private static final String KEY_EXPLORADOR_VINCULADO_ID = "exploradorVinculadoId";
+    // Objetivo real: 24 horas. Durante pruebas usamos 2 minutos.
+    private static final long TIEMPO_LIMITE_CONFIRMACION_MS = 2 * 60 * 1000L;
+    private static final long INTERVALO_CONTADOR_MS = 1_000L;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
     private ActivityResultLauncher<String> requestLocationPermissionLauncher;
@@ -68,11 +67,17 @@ public class PantallaJuegos extends BaseActivity {
     private String nombreExplorador;
     private String guardianVinculadoId;
 
+    private Button btnAccionJuegos;
+    private TextView tvContadorListo;
+    private CountDownTimer contadorListo;
+    private boolean listoConfirmado;
+    private boolean alertaTimeoutEnviada;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
-        super.onCreate(savedInstanceState); //llamada a su implementacion
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.pantalla_juegos); //indica a android que debe establecer
+        setContentView(R.layout.pantalla_juegos);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_juegos), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -83,14 +88,12 @@ public class PantallaJuegos extends BaseActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         configurarSolicitudUbicacion();
         configurarCallbackUbicacion();
-        prepararPerfilExplorador();
 
-        //CREAR CANAL DE NOTIFICACIONES
         createNotificationChannel();
 
-        //REGISTRAR LAUNCHER PARA SOLICITAR PERMISOS
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 isGranted -> {
@@ -102,55 +105,62 @@ public class PantallaJuegos extends BaseActivity {
                 }
         );
 
-            requestLocationPermissionLauncher = registerForActivityResult(
+        requestLocationPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
                 granted -> {
                     if (granted) {
-                    iniciarPublicacionUbicacion();
+                        iniciarPublicacionUbicacion();
                     }
                 }
-            );
+        );
 
-            solicitarPermisoUbicacionSiHaceFalta();
+        solicitarPermisoUbicacionSiHaceFalta();
+        prepararPerfilExplorador();
 
-        //BOTON DE FLECHA REGRESAR
-        final ImageButton imageButtonRegresar = findViewById(R.id.imageButtonRegresar);
-
-        //EVENTO PARA REGRESAR A PANTALLA INICIO
+        ImageButton imageButtonRegresar = findViewById(R.id.imageButtonRegresar);
         imageButtonRegresar.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PantallaJuegos.this, pantalla_inicio.class);
-                startActivity(intent);
+                startActivity(new Intent(PantallaJuegos.this, pantalla_inicio.class));
             }
         });
 
-        //BOTON DE CONFIGURACION
-        final Button btnConfiguracionJuegos = (Button) findViewById(R.id.btnConfiguracionJuegos);
-
-        //EVENTO PARA IR A COMPARTIR CODIGO
+        Button btnConfiguracionJuegos = findViewById(R.id.btnConfiguracionJuegos);
         btnConfiguracionJuegos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PantallaJuegos.this, PantallaCompartirCodigo.class);
-                startActivity(intent);
+                startActivity(new Intent(PantallaJuegos.this, PantallaCompartirCodigo.class));
             }
         });
 
-        //BOTON DE JUGAR
-        final Button btnAccionJuegos = (Button) findViewById(R.id.btnAccionJuegos);
+        btnAccionJuegos = findViewById(R.id.btnAccionJuegos);
+        tvContadorListo = findViewById(R.id.tvContadorListo);
 
-        //EVENTO PARA COMENZAR A JUGAR
         btnAccionJuegos.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                verificarYMostrarNotificacion();
+                confirmarListo();
             }
         });
     }
 
+    private void confirmarListo() {
+        if (listoConfirmado) {
+            return;
+        }
+
+        listoConfirmado = true;
+        detenerContadorListo();
+
+        btnAccionJuegos.setEnabled(false);
+        btnAccionJuegos.setClickable(false);
+        btnAccionJuegos.setAlpha(0.5f);
+        tvContadorListo.setText("Confirmacion enviada al Guardian");
+
+        verificarYMostrarNotificacion();
+    }
+
     private void createNotificationChannel() {
-        // Crear el canal de notificaciones solo para Android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Notificaciones de Juego";
             String description = "Notificaciones para el inicio de juegos";
@@ -165,15 +175,13 @@ public class PantallaJuegos extends BaseActivity {
 
     private void verificarYMostrarNotificacion() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Android 13+ requiere permiso en runtime
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     == PackageManager.PERMISSION_GRANTED) {
                 mostrarNotificacionJuego();
             } else {
                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         } else {
-            // Para versiones anteriores no se requiere permiso en runtime
             mostrarNotificacionJuego();
         }
     }
@@ -181,20 +189,83 @@ public class PantallaJuegos extends BaseActivity {
     private void mostrarNotificacionJuego() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("¡Has empezado a jugar!")
-                .setContentText("Tienes tiempo limitado para terminar")
+                .setContentTitle("Confirmacion enviada")
+                .setContentText("Le avisamos a tu Guardian que ya terminaste")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                 == PackageManager.PERMISSION_GRANTED) {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
-            Toast.makeText(this, "¡Juego Completado!", Toast.LENGTH_SHORT).show();
         }
 
-        // Enviar mensaje al Guardián vinculado
-        enviarMensajeAlGuardian();
+        enviarMensajeAlGuardian(
+                "Confirmo que ya termine y estoy listo.",
+                "listo_confirmado"
+        );
+    }
+
+    private void iniciarContadorListo() {
+        detenerContadorListo();
+        listoConfirmado = false;
+        alertaTimeoutEnviada = false;
+
+        if (btnAccionJuegos != null) {
+            btnAccionJuegos.setEnabled(true);
+            btnAccionJuegos.setClickable(true);
+            btnAccionJuegos.setAlpha(1f);
+        }
+
+        if (tvContadorListo != null) {
+            tvContadorListo.setText("Tiempo para confirmar: 02:00");
+        }
+
+        contadorListo = new CountDownTimer(TIEMPO_LIMITE_CONFIRMACION_MS, INTERVALO_CONTADOR_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long totalSegundos = millisUntilFinished / 1000;
+                long minutos = totalSegundos / 60;
+                long segundos = totalSegundos % 60;
+                if (tvContadorListo != null) {
+                    tvContadorListo.setText(String.format(Locale.getDefault(),
+                            "Tiempo para confirmar: %02d:%02d", minutos, segundos));
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                if (listoConfirmado || alertaTimeoutEnviada) {
+                    return;
+                }
+
+                alertaTimeoutEnviada = true;
+
+                if (tvContadorListo != null) {
+                    tvContadorListo.setText("Tiempo agotado: contacta a tu Guardian");
+                }
+
+                if (btnAccionJuegos != null) {
+                    btnAccionJuegos.setEnabled(false);
+                    btnAccionJuegos.setClickable(false);
+                    btnAccionJuegos.setAlpha(0.5f);
+                }
+
+                enviarMensajeAlGuardian(
+                        "No se recibio confirmacion de Listo en 2 minutos. Ponte en contacto con tu Explorador.",
+                        "alerta_timeout_liberacion"
+                );
+            }
+        };
+
+        contadorListo.start();
+    }
+
+    private void detenerContadorListo() {
+        if (contadorListo != null) {
+            contadorListo.cancel();
+            contadorListo = null;
+        }
     }
 
     private void configurarSolicitudUbicacion() {
@@ -268,7 +339,7 @@ public class PantallaJuegos extends BaseActivity {
     private void prepararPerfilExplorador() {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(this, "Inicia sesión para publicar ubicación", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Inicia sesion para publicar ubicacion", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -288,8 +359,10 @@ public class PantallaJuegos extends BaseActivity {
                     codigoExplorador = documentSnapshot.getString("codigoExplorador");
                     nombreExplorador = documentSnapshot.getString("nombreUsuario");
                     guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
-                    
-                    android.util.Log.d("PantallaJuegos", "Explorador: " + nombreExplorador + 
+
+                    iniciarContadorListo();
+
+                    android.util.Log.d("PantallaJuegos", "Explorador: " + nombreExplorador +
                             ", Guardian vinculado: " + guardianVinculadoId);
                 })
                 .addOnFailureListener(e -> {
@@ -312,60 +385,40 @@ public class PantallaJuegos extends BaseActivity {
         super.onPause();
     }
 
-    private void enviarMensajeAlGuardian() {
-        // Si no hay guardián vinculado, no enviar mensaje
+    @Override
+    protected void onDestroy() {
+        detenerContadorListo();
+        super.onDestroy();
+    }
+
+    private void enviarMensajeAlGuardian(@NonNull String contenido, @NonNull String tipo) {
         if (guardianVinculadoId == null || guardianVinculadoId.trim().isEmpty()) {
-            android.util.Log.w("PantallaJuegos", "No hay guardián vinculado");
+            android.util.Log.w("PantallaJuegos", "No hay guardian vinculado");
             return;
         }
 
-        android.util.Log.d("PantallaJuegos", "Enviando mensaje al guardián: " + guardianVinculadoId);
+        Map<String, Object> mensaje = new HashMap<>();
+        mensaje.put("remitente", nombreExplorador != null ? nombreExplorador : "Explorador");
+        mensaje.put("contenido", contenido);
+        mensaje.put("timestamp", FieldValue.serverTimestamp());
+        mensaje.put("tipo", tipo);
 
-        // Obtener el nombre del guardián para personalizar el mensaje
-        firestore.collection("usuarios")
+        String messageId = firestore.collection("mensajes")
                 .document(guardianVinculadoId)
-                .get()
-                .addOnSuccessListener(guardianDoc -> {
-                    String nombreGuardian = guardianDoc.getString("nombreUsuario");
-                    if (nombreGuardian == null) {
-                        nombreGuardian = "Guardián";
-                    }
+                .collection("historial")
+                .document().getId();
 
-                    // Crear mensaje
-                    Map<String, Object> mensaje = new HashMap<>();
-                    mensaje.put("remitente", nombreExplorador != null ? nombreExplorador : "Explorador");
-                    mensaje.put("contenido", "Hola " + nombreGuardian);
-                    mensaje.put("timestamp", FieldValue.serverTimestamp());
-                    mensaje.put("tipo", "juego_iniciado");
-
-                    // Guardar en historial del guardián
-                    String messageId = firestore.collection("mensajes")
-                            .document(guardianVinculadoId)
-                            .collection("historial")
-                            .document().getId();
-
-                    firestore.collection("mensajes")
-                            .document(guardianVinculadoId)
-                            .collection("historial")
-                            .document(messageId)
-                            .set(mensaje)
-                            .addOnSuccessListener(aVoid -> {
-                                android.util.Log.d("PantallaJuegos", 
-                                        "Mensaje guardado exitosamente: " + messageId);
-                            })
-                            .addOnFailureListener(e -> {
-                                android.util.Log.e("PantallaJuegos", 
-                                        "Error al guardar mensaje", e);
-                                Toast.makeText(PantallaJuegos.this, 
-                                        "Error al enviar mensaje: " + e.getMessage(), 
-                                        Toast.LENGTH_SHORT).show();
-                            });
-                })
+        firestore.collection("mensajes")
+                .document(guardianVinculadoId)
+                .collection("historial")
+                .document(messageId)
+                .set(mensaje)
+                .addOnSuccessListener(aVoid -> android.util.Log.d("PantallaJuegos",
+                        "Mensaje guardado exitosamente: " + messageId))
                 .addOnFailureListener(e -> {
-                    android.util.Log.e("PantallaJuegos", 
-                            "Error leyendo perfil del guardián", e);
-                    Toast.makeText(PantallaJuegos.this, 
-                            "No se pudo leer perfil del Guardián", 
+                    android.util.Log.e("PantallaJuegos", "Error al guardar mensaje", e);
+                    Toast.makeText(PantallaJuegos.this,
+                            "Error al enviar mensaje: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
     }
