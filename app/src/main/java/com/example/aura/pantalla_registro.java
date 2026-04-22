@@ -221,7 +221,7 @@ public class pantalla_registro extends BaseActivity {
                                 Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
 
                                 Intent intentDestino = TIPO_GUARDIAN.equals(tipoUsuario)
-                                        ? new Intent(this, PantallaGuardian.class)
+                                    ? new Intent(this, PantallaVincular.class)
                                         : new Intent(this, PantallaJuegos.class);
                                 startActivity(intentDestino);
                                 finish();

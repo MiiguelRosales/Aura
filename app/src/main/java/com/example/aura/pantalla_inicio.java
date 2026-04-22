@@ -67,9 +67,6 @@ public class pantalla_inicio extends AppCompatActivity {
         //BOTON PARA IR A LA PANTALLA INICIO
         final Button btnInicio = (Button) findViewById(R.id.btnInicio);
 
-        //BOTON PARA IR A LA PANTALLA DE VINCULAR
-        final Button btnVincular = (Button) findViewById(R.id.btnVincular);
-
         // TEXT SWITCHER PARA LAS FRASES ANIMADAS
         final TextSwitcher textSwitcher = findViewById(R.id.textSwitcherFrase);
         final Typeface fuenteCaveat = ResourcesCompat.getFont(this, R.font.caveat_brush);
@@ -142,14 +139,6 @@ public class pantalla_inicio extends AppCompatActivity {
             }
         });
 
-        //EVENTO PARA IR A VINCULAR
-        btnVincular.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(pantalla_inicio.this, PantallaVincular.class);
-                startActivity(intent);
-            }
-        });
     }
 
     private void actualizarToggleUI(FrameLayout track, ImageView thumb, boolean dark) {

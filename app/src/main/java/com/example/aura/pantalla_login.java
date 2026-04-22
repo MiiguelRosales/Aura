@@ -199,9 +199,18 @@ public class pantalla_login extends BaseActivity {
                                             }});
                                 }
 
-                                Intent intentDestino = TIPO_GUARDIAN.equals(tipoReal)
-                                        ? new Intent(pantalla_login.this, PantallaGuardian.class)
-                                        : new Intent(pantalla_login.this, PantallaJuegos.class);
+                                Intent intentDestino;
+                                if (TIPO_GUARDIAN.equals(tipoReal)) {
+                                    String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
+                                    boolean tieneVinculo = exploradorVinculadoId != null
+                                            && !exploradorVinculadoId.trim().isEmpty();
+
+                                    intentDestino = tieneVinculo
+                                            ? new Intent(pantalla_login.this, PantallaGuardian.class)
+                                            : new Intent(pantalla_login.this, PantallaVincular.class);
+                                } else {
+                                    intentDestino = new Intent(pantalla_login.this, PantallaJuegos.class);
+                                }
 
                                 Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show();
                                 startActivity(intentDestino);
