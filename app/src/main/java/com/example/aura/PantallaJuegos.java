@@ -14,7 +14,7 @@ import android.os.Looper;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -117,20 +117,19 @@ public class PantallaJuegos extends BaseActivity {
         solicitarPermisoUbicacionSiHaceFalta();
         prepararPerfilExplorador();
 
-        ImageButton imageButtonRegresar = findViewById(R.id.imageButtonRegresar);
-        imageButtonRegresar.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(PantallaJuegos.this, pantalla_inicio.class));
-            }
+
+        LinearLayout navPerfil = findViewById(R.id.navPerfil);
+        navPerfil.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaJuegos.this, PantallaPerfil.class));
+            overridePendingTransition(0, 0);
+            finish();
         });
 
-        Button btnConfiguracionJuegos = findViewById(R.id.btnConfiguracionJuegos);
-        btnConfiguracionJuegos.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(PantallaJuegos.this, PantallaCompartirCodigo.class));
-            }
+        LinearLayout navConfiguraciones = findViewById(R.id.navConfiguraciones);
+        navConfiguraciones.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaJuegos.this, PantallaAjustes.class));
+            overridePendingTransition(0, 0);
+            finish();
         });
 
         btnAccionJuegos = findViewById(R.id.btnAccionJuegos);

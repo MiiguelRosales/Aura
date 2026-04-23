@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_perfil"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_login_gradient"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    tools:context=".PantallaPerfil">
+
+    <!-- FONDOS Y BLOBS -->
+    <View
+        android:id="@+id/blobTopPerfil"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-44dp"
+        android:background="@drawable/bg_login_blob_top" />
+
+    <View
+        android:id="@+id/blobBottomPerfil"
+        android:layout_width="290dp"
+        android:layout_height="290dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="-84dp"
+        android:layout_marginBottom="-68dp"
+        android:background="@drawable/bg_login_blob_bottom" />
+
+
+
+    <!-- NAVEGACIÓN INFERIOR (3 Botones) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:id="@+id/navPaginaGuardian"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:id="@+id/tvNavPrincipalIcono"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvNavPrincipalTexto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Guardián"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navPerfil"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Perfil"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navConfiguraciones"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚙️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Ajustes"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- PANEL CENTRAL (Perfil) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardPerfil"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="100dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/card_inner_bg"
+                android:padding="20dp"
+                android:src="@drawable/ic_launcher_foreground"
+                app:tint="@color/login_link" />
+
+            <EditText
+                android:id="@+id/etNombreUsuarioPerfil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:enabled="false"
+                android:fontFamily="sans-serif-condensed"
+                android:hint="Nombre"
+                android:inputType="textPersonName"
+                android:minHeight="0dp"
+                android:padding="0dp"
+                android:text="Cargando..."
+                android:textAlignment="center"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTipoUsuarioPerfil"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="..."
+                android:textColor="@color/login_link"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <!-- CONTENEDOR DE DATOS ADICIONALES -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/card_inner_bg"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="📧 Correo:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etCorreoPerfil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@null"
+                    android:enabled="false"
+                    android:fontFamily="sans-serif-condensed"
+                    android:hint="Correo"
+                    android:inputType="textEmailAddress"
+                    android:minHeight="0dp"
+                    android:padding="4dp"
+                    android:text="usuario@correo.com"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="📱 Celular:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etCelularPerfil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@null"
+                    android:enabled="false"
+                    android:fontFamily="sans-serif-condensed"
+                    android:hint="Celular"
+                    android:inputType="phone"
+                    android:minHeight="0dp"
+                    android:padding="4dp"
+                    android:text="Cargando..."
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="🎂 Fecha de Nacimiento:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etFechaNacPerfil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:background="@null"
+                    android:enabled="false"
+                    android:fontFamily="sans-serif-condensed"
+                    android:hint="DD/MM/AAAA"
+                    android:inputType="date"
+                    android:minHeight="0dp"
+                    android:padding="4dp"
+                    android:text="Cargando..."
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="🔑 Contraseña:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+
+                <EditText
+                    android:id="@+id/etContrasenaPerfil"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:enabled="false"
+                    android:fontFamily="sans-serif-condensed"
+                    android:hint="(Opcional) Nueva contraseña"
+                    android:inputType="textPassword"
+                    android:minHeight="0dp"
+                    android:padding="4dp"
+                    android:text="••••••••"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnModificar"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="24dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="MODIFICAR DATOS"
+                android:textColor="@color/login_btn_text"
+                android:textSize="14sp"
+                app:backgroundTint="@color/login_btn_bg"
+                app:cornerRadius="24dp"
+                app:strokeColor="@color/login_btn_stroke"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</RelativeLayout>
+
+
+
+

@@ -2,13 +2,12 @@ package com.example.aura;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.text.InputType;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
+import android.widget.LinearLayout;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestore;
+import androidx.appcompat.app.AlertDialog;
 
 public class pantalla_login extends BaseActivity {
 
@@ -54,29 +54,17 @@ public class pantalla_login extends BaseActivity {
         });
 
         ImageView ivFondo = findViewById(R.id.ivFondoGifLogin);
-        ImageButton btnRegresar = findViewById(R.id.imageButtonLoginIzquierda);
         EditText etCorreo = findViewById(R.id.etCorreoLogin);
         EditText etContrasena = findViewById(R.id.etContrasenaLogin);
-        AutoCompleteTextView actvTipoUsuarioLogin = findViewById(R.id.actvTipoUsuarioLogin);
         CheckBox cbGuardarInicioSesion = findViewById(R.id.cbGuardarInicioSesion);
         MaterialButton btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
         TextView tvDatosDemo = findViewById(R.id.tvDatosDemo);
+        TextView tvCrearCuenta = findViewById(R.id.tvCrearCuenta);
+        TextView tvRecuperarContrasena = findViewById(R.id.tvRecuperarContrasena);
 
         tvDatosDemo.setVisibility(TextView.GONE);
 
-        final String[] tiposUsuario = {"🛡️  Guardián", "🌟  Explorador"};
-        ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, tiposUsuario);
-        actvTipoUsuarioLogin.setAdapter(adapterTipo);
-
-        SharedPreferences prefsTipo = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        String tipoGuardado = prefsTipo.getString(KEY_TIPO_USUARIO, TIPO_EXPLORADOR);
-        if (TIPO_GUARDIAN.equals(tipoGuardado)) {
-            actvTipoUsuarioLogin.setText(tiposUsuario[0], false);
-        } else {
-            actvTipoUsuarioLogin.setText(tiposUsuario[1], false);
-        }
 
         // Auto-marcar checkbox si está guardado
         boolean guardarLoginGuardado = prefs.getBoolean(KEY_GUARDAR_LOGIN, false);
@@ -86,22 +74,9 @@ public class pantalla_login extends BaseActivity {
             cbGuardarInicioSesion.setChecked(true);
         }
 
-        actvTipoUsuarioLogin.setOnItemClickListener((parent, view, position, id) -> {
-            String tipo = position == 0 ? TIPO_GUARDIAN : TIPO_EXPLORADOR;
-            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                    .edit()
-                    .putString(KEY_TIPO_USUARIO, tipo)
-                    .apply();
-        });
-
 //        Glide.with(this)
 //                .load(R.drawable.pantalla_registro)
 //                .into(ivFondo);
-
-        btnRegresar.setOnClickListener(v -> {
-            startActivity(new Intent(pantalla_login.this, pantalla_inicio.class));
-            finish();
-        });
 
         cbGuardarInicioSesion.setOnCheckedChangeListener((buttonView, isChecked) -> {
             String correo = etCorreo.getText().toString().trim();
@@ -135,8 +110,6 @@ public class pantalla_login extends BaseActivity {
         btnIniciarSesion.setOnClickListener(v -> {
             String correo = etCorreo.getText().toString().trim();
             String contrasena = etContrasena.getText().toString().trim();
-            String tipoSeleccionado = actvTipoUsuarioLogin.getText().toString();
-            String tipoEsperado = tipoSeleccionado.contains("Guardián") ? TIPO_GUARDIAN : TIPO_EXPLORADOR;
 
             if (TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
                 Toast.makeText(this, "Completa correo y contraseña", Toast.LENGTH_SHORT).show();
@@ -144,13 +117,53 @@ public class pantalla_login extends BaseActivity {
             }
 
             btnIniciarSesion.setEnabled(false);
-            loginConFirebase(correo, contrasena, tipoEsperado, btnIniciarSesion);
+            loginConFirebase(correo, contrasena, btnIniciarSesion);
         });
+
+        tvCrearCuenta.setOnClickListener(v -> {
+            startActivity(new Intent(pantalla_login.this, pantalla_registro.class));
+        });
+
+        tvRecuperarContrasena.setOnClickListener(v -> mostrarDialogoRecuperarContrasena(etCorreo.getText().toString().trim()));
+    }
+
+    private void mostrarDialogoRecuperarContrasena(String correoActual) {
+        final EditText inputCorreo = new EditText(this);
+        inputCorreo.setHint("correo@ejemplo.com");
+        inputCorreo.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        inputCorreo.setText(correoActual);
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        inputCorreo.setPadding(padding, padding, padding, padding);
+
+        LinearLayout container = new LinearLayout(this);
+        container.setPadding(padding, padding / 2, padding, 0);
+        container.addView(inputCorreo);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Recuperar contraseña")
+                .setMessage("Ingresa tu correo para enviarte un enlace de recuperación")
+                .setView(container)
+                .setPositiveButton("Enviar", (dialog, which) -> {
+                    String correo = inputCorreo.getText().toString().trim();
+                    if (TextUtils.isEmpty(correo)) {
+                        Toast.makeText(this, "Ingresa un correo válido", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    auth.sendPasswordResetEmail(correo)
+                            .addOnSuccessListener(unused -> Toast.makeText(this,
+                                    "Te enviamos un enlace de recuperación",
+                                    Toast.LENGTH_LONG).show())
+                            .addOnFailureListener(e -> Toast.makeText(this,
+                                    "No se pudo enviar el correo: " + e.getMessage(),
+                                    Toast.LENGTH_LONG).show());
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
     }
 
     private void loginConFirebase(String correo,
                                   String contrasena,
-                                  String tipoEsperado,
                                   MaterialButton btnIniciarSesion) {
         auth.signInWithEmailAndPassword(correo, contrasena)
                 .addOnSuccessListener(authResult -> {
@@ -175,15 +188,6 @@ public class pantalla_login extends BaseActivity {
                                 if (tipoReal == null) {
                                     btnIniciarSesion.setEnabled(true);
                                     Toast.makeText(this, "Perfil incompleto", Toast.LENGTH_SHORT).show();
-                                    return;
-                                }
-
-                                if (!tipoEsperado.equals(tipoReal)) {
-                                    auth.signOut();
-                                    btnIniciarSesion.setEnabled(true);
-                                    Toast.makeText(this,
-                                            "Este usuario está registrado como " + tipoReal,
-                                            Toast.LENGTH_LONG).show();
                                     return;
                                 }
 
@@ -223,7 +227,7 @@ public class pantalla_login extends BaseActivity {
                                     FirebaseFirestoreException firestoreException = (FirebaseFirestoreException) e;
                                     detalle = "[" + firestoreException.getCode() + "] " + detalle;
                                 }
-                                Toast.makeText(this, "Error al leer perfil: " + detalle, Toast.LENGTH_LONG).show();
+                                showMessage("Error al leer perfil: " + detalle);
                             });
                 })
                 .addOnFailureListener(e -> {
@@ -233,7 +237,7 @@ public class pantalla_login extends BaseActivity {
                         String code = ((FirebaseAuthException) e).getErrorCode();
                         detalle = "[" + code + "] " + detalle;
                     }
-                    Toast.makeText(this, "Error de login: " + detalle, Toast.LENGTH_LONG).show();
+                    showMessage("Error de login: " + detalle);
                 });
     }
 }

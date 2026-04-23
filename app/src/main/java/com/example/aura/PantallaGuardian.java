@@ -16,6 +16,7 @@ import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -135,10 +136,18 @@ public class PantallaGuardian extends BaseActivity {
             Toast.makeText(this, "Historial limpiado", Toast.LENGTH_SHORT).show();
         });
 
-        // ── Botón regresar ────────────────────────────────────────────
-        ImageButton btnRegresar = findViewById(R.id.imageButtonRegresarGuardian);
-        btnRegresar.setOnClickListener(v -> {
-            startActivity(new Intent(PantallaGuardian.this, pantalla_inicio.class));
+        // ── Navegación Inferior ───────────────────────────────────────
+        LinearLayout navPerfil = findViewById(R.id.navPerfil);
+        navPerfil.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaGuardian.this, PantallaPerfil.class));
+            overridePendingTransition(0, 0);
+            finish();
+        });
+
+        LinearLayout navConfiguraciones = findViewById(R.id.navConfiguraciones);
+        navConfiguraciones.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaGuardian.this, PantallaAjustes.class));
+            overridePendingTransition(0, 0);
             finish();
         });
 

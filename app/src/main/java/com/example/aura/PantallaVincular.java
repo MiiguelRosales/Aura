@@ -4,19 +4,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
@@ -31,12 +31,13 @@ public class PantallaVincular extends BaseActivity {
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+    private String exploradorVinculadoId;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) { //llamado cuando se crea por primera vez la actividad
-        super.onCreate(savedInstanceState); //llamada a su implementacion
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.pantalla_vincular); //indica a android que debe establecer
+        setContentView(R.layout.pantalla_vincular);
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
@@ -46,40 +47,117 @@ public class PantallaVincular extends BaseActivity {
             return insets;
         });
 
-        //IMAGEN PARA EL FONDO ANIMADO
-        final ImageView ivFondoGifVincular = (ImageView) findViewById(R.id.ivFondoGifVincular);
-
-        //BOTON PARA REGRESAR AL INICIO
-        final ImageButton imageButtonRegresar = (ImageButton) findViewById(R.id.imageButtonRegresar);
         final EditText etCodigoVincular = findViewById(R.id.etCodigoVincular);
         final MaterialButton btnAceptarVinculo = findViewById(R.id.btnAceptarVinculo);
+        final MaterialCardView cardVinculoActual = findViewById(R.id.cardVinculoActual);
+        final TextView tvCodigoVinculado = findViewById(R.id.tvCodigoVinculado);
+        final MaterialButton btnDesvincular = findViewById(R.id.btnDesvincular);
 
-        //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
-//        Glide.with(this)
-//                .load(R.drawable.pantalla_vincular)
-//                .into(ivFondoGifVincular);
+        // Botón Volver
+        MaterialButton btnRegresar = findViewById(R.id.btnRegresar);
+        btnRegresar.setOnClickListener(v -> {
+            startActivity(new Intent(this, pantalla_login.class));
+            overridePendingTransition(0, 0);
+            finish();
+        });
+
+        // Cargar datos del Guardian para ver si ya tiene vínculo
+        cargarEstadoVinculo(cardVinculoActual, tvCodigoVinculado, btnDesvincular, btnRegresar);
 
         btnAceptarVinculo.setOnClickListener(v -> {
+            if (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty()) {
+                showMessage("Vínculo activo. Desvincula primero antes de vincular otro Explorador.");
+                return;
+            }
             String codigo = etCodigoVincular.getText().toString().trim().toUpperCase();
             if (codigo.isEmpty()) {
                 Toast.makeText(this, "Ingresa el código del Explorador", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            vincularConCodigo(codigo);
+            vincularConCodigo(codigo, cardVinculoActual, tvCodigoVinculado, btnDesvincular);
         });
 
-        //EVENTO REGRESAR AL INICIO
-        imageButtonRegresar.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(PantallaVincular.this, pantalla_inicio.class);
-                startActivity(intent);
-            }
-        });
+        btnDesvincular.setOnClickListener(v -> mostrarDialogoDesvincular());
     }
 
-    private void vincularConCodigo(String codigo) {
+    private void cargarEstadoVinculo(MaterialCardView card, TextView tvCodigo,
+                                     MaterialButton btnDesvincular, MaterialButton btnRegresar) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) {
+            btnRegresar.setVisibility(View.VISIBLE); // Sin sesión, mostrar botón volver
+            return;
+        }
+
+        firestore.collection("usuarios")
+                .document(user.getUid())
+                .get()
+                .addOnSuccessListener(doc -> {
+                    String vinculadoId = doc.getString("exploradorVinculadoId");
+                    String codigo = doc.getString("codigoVinculado");
+
+                    if (vinculadoId != null && !vinculadoId.trim().isEmpty()) {
+                        // Hay vínculo activo: mostrar tarjeta, ocultar botón volver
+                        exploradorVinculadoId = vinculadoId;
+                        card.setVisibility(View.VISIBLE);
+                        tvCodigo.setText(codigo != null ? codigo : vinculadoId);
+                        btnRegresar.setVisibility(View.GONE);
+                    } else {
+                        // Sin vínculo: mostrar botón volver al inicio
+                        btnRegresar.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
+    private void mostrarDialogoDesvincular() {
+        new AlertDialog.Builder(this)
+                .setTitle("¿Estás seguro?")
+                .setMessage("Se eliminará el vínculo entre tú y tu Explorador. Ambos necesitarán vincularse de nuevo.")
+                .setPositiveButton("Sí, desvincular", (dialog, which) -> ejecutarDesvinculacion())
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    private void ejecutarDesvinculacion() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null || exploradorVinculadoId == null) return;
+
+        String guardianUid = user.getUid();
+
+        // 1. Limpiar datos del Guardian
+        firestore.collection("usuarios").document(guardianUid)
+                .update(
+                        "exploradorVinculadoId", null,
+                        "codigoVinculado", null,
+                        "vinculadoEn", null
+                )
+                .addOnSuccessListener(unused -> {
+                    // 2. Limpiar datos del Explorador
+                    firestore.collection("usuarios").document(exploradorVinculadoId)
+                            .update(
+                                    "guardianVinculadoId", null,
+                                    "vinculadoEn", null
+                            )
+                            .addOnSuccessListener(unused2 -> {
+                                // 3. Limpiar SharedPreferences
+                                getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                                        .edit()
+                                        .remove(KEY_EXPLORADOR_VINCULADO_ID)
+                                        .remove(KEY_CODIGO_VINCULADO)
+                                        .apply();
+
+                                Toast.makeText(this, "Vínculo eliminado correctamente", Toast.LENGTH_SHORT).show();
+                                // Recargar la pantalla para mostrar estado sin vínculo
+                                finish();
+                                startActivity(getIntent());
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Error al limpiar datos del Explorador", Toast.LENGTH_SHORT).show());
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error al desvincular", Toast.LENGTH_SHORT).show());
+    }
+
+    private void vincularConCodigo(String codigo, MaterialCardView card, TextView tvCodigo, MaterialButton btnDesvincular) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(this, "Debes iniciar sesión como Guardián", Toast.LENGTH_SHORT).show();
@@ -96,14 +174,14 @@ public class PantallaVincular extends BaseActivity {
                         Toast.makeText(this, "Solo un Guardián puede vincular", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
-                    validarCodigoYGuardarVinculo(guardianUid, codigo);
+                    validarCodigoYGuardarVinculo(guardianUid, codigo, card, tvCodigo);
                 })
                 .addOnFailureListener(e -> Toast.makeText(this,
                         "No se pudo validar el perfil", Toast.LENGTH_SHORT).show());
     }
 
-    private void validarCodigoYGuardarVinculo(String guardianUid, String codigo) {
+    private void validarCodigoYGuardarVinculo(String guardianUid, String codigo,
+                                               MaterialCardView card, TextView tvCodigo) {
         firestore.collection("vinculos")
                 .document(codigo)
                 .get()
@@ -113,42 +191,40 @@ public class PantallaVincular extends BaseActivity {
                         return;
                     }
 
-                    String exploradorId = documentSnapshot.getString("exploradorId");
-                    if (exploradorId == null || exploradorId.trim().isEmpty()) {
+                    String expId = documentSnapshot.getString("exploradorId");
+                    if (expId == null || expId.trim().isEmpty()) {
                         Toast.makeText(this, "Código sin Explorador asociado", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
                     prefs.edit()
-                            .putString(KEY_EXPLORADOR_VINCULADO_ID, exploradorId)
+                            .putString(KEY_EXPLORADOR_VINCULADO_ID, expId)
                             .putString(KEY_CODIGO_VINCULADO, codigo)
                             .apply();
 
-                    // Actualizar perfil del Guardián
-                    firestore.collection("usuarios")
-                            .document(guardianUid)
+                    firestore.collection("usuarios").document(guardianUid)
                             .update(
-                                    "exploradorVinculadoId", exploradorId,
+                                    "exploradorVinculadoId", expId,
                                     "codigoVinculado", codigo,
                                     "vinculadoEn", FieldValue.serverTimestamp()
                             )
                             .addOnSuccessListener(unused -> {
-                                // TAMBIEN: Actualizar perfil del Explorador con ID del Guardián
-                                firestore.collection("usuarios")
-                                        .document(exploradorId)
+                                firestore.collection("usuarios").document(expId)
                                         .update(
                                                 "guardianVinculadoId", guardianUid,
                                                 "vinculadoEn", FieldValue.serverTimestamp()
                                         )
                                         .addOnSuccessListener(unused2 -> {
                                             Toast.makeText(this, "Vinculación exitosa", Toast.LENGTH_SHORT).show();
+                                            exploradorVinculadoId = expId;
+                                            card.setVisibility(View.VISIBLE);
+                                            tvCodigo.setText(codigo);
                                             startActivity(new Intent(PantallaVincular.this, PantallaGuardian.class));
                                             finish();
                                         })
-                                        .addOnFailureListener(e -> {
-                                            Toast.makeText(this, "Error al guardar en Explorador", Toast.LENGTH_SHORT).show();
-                                        });
+                                        .addOnFailureListener(e ->
+                                                Toast.makeText(this, "Error al guardar en Explorador", Toast.LENGTH_SHORT).show());
                             })
                             .addOnFailureListener(e -> Toast.makeText(this,
                                     "No se pudo guardar la vinculación", Toast.LENGTH_SHORT).show());

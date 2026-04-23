@@ -23,4 +23,39 @@
     <color name="aura_mini_card_bg">#ECEAFC</color>
     <color name="aura_mini_card_stroke">#C6BEFF</color>
     <color name="aura_icon_tint">#FFFFFF</color>
+
+    <!-- Pantalla inicio (light) -->
+    <color name="inicio_bg_start">#215D7A</color>
+    <color name="inicio_bg_center">#184E70</color>
+    <color name="inicio_bg_end">#102B56</color>
+    <color name="inicio_blob_top_start">#334F86B8</color>
+    <color name="inicio_blob_top_end">#102E5BA8</color>
+    <color name="inicio_blob_bottom_start">#2D1D5AA8</color>
+    <color name="inicio_blob_bottom_end">#1F123F8A</color>
+    <color name="inicio_text_primary">#F8FFFFFF</color>
+    <color name="inicio_btn_bg">#008CFF</color>
+    <color name="inicio_btn_stroke">#4DBCE4FF</color>
+    <color name="inicio_btn_ripple">#66BCE4FF</color>
+    <color name="inicio_glow_start">#9934D399</color>
+    <color name="inicio_glow_center">#5534D399</color>
+    <color name="inicio_glow_end">#0034D399</color>
+
+    <!-- Pantalla login (light) -->
+    <color name="login_bg_start">#3B8FD1</color>
+    <color name="login_bg_center">#4DA8D8</color>
+    <color name="login_bg_end">#65C8BE</color>
+    <color name="login_blob_top_start">#66A9D9FF</color>
+    <color name="login_blob_top_end">#334D9BFF</color>
+    <color name="login_blob_bottom_start">#6699F0FF</color>
+    <color name="login_blob_bottom_end">#333F7FFF</color>
+    <color name="login_card_bg">#F4FBFFFF</color>
+    <color name="login_card_stroke">#90CDE7FF</color>
+    <color name="login_input_stroke">#78A7D9</color>
+    <color name="login_link">#2C63C9</color>
+    <color name="login_btn_bg">#2E73D1</color>
+    <color name="login_btn_stroke">#2057B3</color>
+    <color name="login_btn_text">#FFFFFFFF</color>
+    <color name="login_dropdown_bg">#EAF4FF</color>
+    <color name="login_dropdown_field_bg">#DCEEFF</color>
+    <color name="login_dropdown_item_selected">#C9E2FF</color>
 </resources>

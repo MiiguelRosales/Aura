@@ -5,11 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -57,8 +55,6 @@ public class pantalla_registro extends BaseActivity {
         //IMAGEN PARA EL FONDO ANIMADO
         final ImageView ivFondoGif = (ImageView) findViewById(R.id.ivFondoGif);
 
-        //BOTON PARA REGRESAR A LA PAGINA PRINCIPAL
-        final ImageButton btnRegresar = (ImageButton) findViewById(R.id.imageButtonRegistroIzquierda);
         final MaterialButton btnRegistrar = findViewById(R.id.btnRegistrar);
 
         final EditText etNombreUsuario = findViewById(R.id.etNombreUsuario);
@@ -79,7 +75,8 @@ public class pantalla_registro extends BaseActivity {
         final String[] dominios = {"gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com"};
         final AutoCompleteTextView actvDominio = findViewById(R.id.actvDominio);
         ArrayAdapter<String> adapterDominio = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, dominios);
+            R.layout.item_dropdown_blue, dominios);
+        adapterDominio.setDropDownViewResource(R.layout.item_dropdown_blue);
         actvDominio.setAdapter(adapterDominio);
         actvDominio.setText(dominios[0], false);
 
@@ -88,7 +85,8 @@ public class pantalla_registro extends BaseActivity {
         final AutoCompleteTextView actvTipoUsuario = findViewById(R.id.actvTipoUsuario);
         final TextView tvInfoTipoUsuario = findViewById(R.id.tvInfoTipoUsuario);
         ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, tiposUsuario);
+            R.layout.item_dropdown_blue, tiposUsuario);
+        adapterTipo.setDropDownViewResource(R.layout.item_dropdown_blue);
         actvTipoUsuario.setAdapter(adapterTipo);
 
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
@@ -149,17 +147,6 @@ public class pantalla_registro extends BaseActivity {
             registrarUsuarioFirebase(correo, contrasena, tipoUsuario, nombre, celular, fechaNacimiento, btnRegistrar);
         });
 
-        //ESTE ES EL EVENTO DEL BOTON PARA REGRESAR A LA PANTALLA DE INICIO
-        btnRegresar.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Creamos el intent para ir a la pantalla de inicio
-                Intent intent = new Intent(pantalla_registro.this, pantalla_inicio.class);
-                startActivity(intent);
-                // Cerramos la pantalla actual para que no se acumulen en el fondo
-                finish();
-            }
-        });
     }
 
     private void actualizarInfoTipoUsuario(TextView tvInfoTipoUsuario, String tipo) {
@@ -233,7 +220,7 @@ public class pantalla_registro extends BaseActivity {
                                     FirebaseFirestoreException firestoreException = (FirebaseFirestoreException) e;
                                     detalle = "[" + firestoreException.getCode() + "] " + detalle;
                                 }
-                                Toast.makeText(this, "No se pudo guardar perfil: " + detalle, Toast.LENGTH_LONG).show();
+                                showMessage("No se pudo guardar perfil: " + detalle);
                             });
                 })
                 .addOnFailureListener(e -> {
@@ -243,7 +230,7 @@ public class pantalla_registro extends BaseActivity {
                         String code = ((FirebaseAuthException) e).getErrorCode();
                         detalle = "[" + code + "] " + detalle;
                     }
-                    Toast.makeText(this, "Error al registrar: " + detalle, Toast.LENGTH_LONG).show();
+                    showMessage("Error al registrar: " + detalle);
                 });
     }
 }

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_ajustes"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_login_gradient"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    tools:context=".PantallaAjustes">
+
+    <!-- FONDOS Y BLOBS -->
+    <View
+        android:id="@+id/blobTopAjustes"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-44dp"
+        android:background="@drawable/bg_login_blob_top" />
+
+    <View
+        android:id="@+id/blobBottomAjustes"
+        android:layout_width="290dp"
+        android:layout_height="290dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="-84dp"
+        android:layout_marginBottom="-68dp"
+        android:background="@drawable/bg_login_blob_bottom" />
+
+
+    <!-- NAVEGACIÓN INFERIOR (3 Botones) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:id="@+id/navPaginaGuardian"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:id="@+id/tvNavPrincipalIcono"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/tvNavPrincipalTexto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Guardián"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navPerfil"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Perfil"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navConfiguraciones"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚙️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Ajustes"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- PANEL CENTRAL (Ajustes) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardAjustes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="100dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Toggle de Tema -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Aspecto visual"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="15sp" />
+
+                <FrameLayout
+                    android:id="@+id/layoutThemeToggle"
+                    android:layout_width="66dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/toggle_track_day"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="1dp">
+
+                    <ImageView
+                        android:id="@+id/ivThumbToggle"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="start|center_vertical"
+                        android:layout_marginStart="3dp"
+                        android:contentDescription="@null"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_sun" />
+
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- Botón Vincular (solo para Guardian) -->
+            <com.google.android.material.button.MaterialButton
+
+
+                android:id="@+id/btnVincular"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="32dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="VINCULACIÓN"
+                android:textColor="@color/login_btn_text"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:backgroundTint="@color/login_btn_bg"
+                app:cornerRadius="24dp"
+                app:strokeColor="@color/login_btn_stroke"
+                app:strokeWidth="1dp" />
+
+            <!-- Botón Mi Token (solo para Explorador) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnMiToken"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="32dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="TOKEN DE VINCULACIÓN"
+                android:textColor="@color/login_btn_text"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:backgroundTint="@color/login_btn_bg"
+                app:cornerRadius="24dp"
+                app:strokeColor="@color/login_btn_stroke"
+                app:strokeWidth="1dp" />
+
+            <!-- Botón Soporte -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSoporte"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="SOPORTE TÉCNICO"
+                android:textColor="@color/login_btn_text"
+                android:textSize="14sp"
+                app:backgroundTint="@color/login_btn_bg"
+                app:cornerRadius="24dp"
+                app:strokeColor="@color/login_btn_stroke"
+                app:strokeWidth="1dp" />
+
+            <!-- Botón Cerrar Sesión -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCerrarSesion"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="16dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="CERRAR SESIÓN"
+                android:textColor="@color/login_btn_text"
+                android:textSize="14sp"
+                app:backgroundTint="@color/login_btn_bg"
+                app:cornerRadius="24dp"
+                app:strokeColor="@color/login_btn_stroke"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- VERSIÓN DE LA APP -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/cardBottomNav"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="sans-serif-condensed"
+        android:text="Aura v1.0.0"
+        android:textColor="@color/aura_text_hint"
+        android:textSize="14sp" />
+
+</RelativeLayout>
+
+
+
+

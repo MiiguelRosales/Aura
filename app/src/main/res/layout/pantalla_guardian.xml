@@ -5,95 +5,182 @@
     android:id="@+id/main_guardian"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_neon_dark"
+    android:background="@drawable/bg_login_gradient"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".PantallaGuardian">
 
-    <!-- BOTÓN REGRESAR -->
-    <ImageButton
-        android:id="@+id/imageButtonRegresarGuardian"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+    <!-- FONDOS Y BLOBS -->
+    <View
+        android:id="@+id/blobTopGuardian"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="-44dp"
+        android:background="@drawable/bg_login_blob_top" />
+
+    <View
+        android:id="@+id/blobBottomGuardian"
+        android:layout_width="290dp"
+        android:layout_height="290dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="24dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="Regresar"
-        android:scaleType="fitCenter"
-        android:src="@drawable/flechaizquierda" />
+        android:layout_marginStart="-84dp"
+        android:layout_marginBottom="-68dp"
+        android:background="@drawable/bg_login_blob_bottom" />
 
-    <!-- NOMBRE DEL EXPLORADOR VINCULADO -->
-    <TextView
-        android:id="@+id/tvNombreExploradorVinculado"
+    <!-- SECCIÓN SUPERIOR: Nombre del Explorador -->
+    <LinearLayout
+        android:id="@+id/layoutTopGuardian"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@id/imageButtonRegresarGuardian"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="38dp"
-        android:fontFamily="@font/caveat_brush"
-        android:text="Explorador: Cargando..."
-        android:textColor="@color/aura_text_hint"
-        android:textSize="16sp"
-        android:gravity="center_vertical" />
-
-    <!-- TÍTULO -->
-    <TextView
-        android:id="@+id/tvTituloGuardian"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="40dp"
-        android:gravity="center_vertical"
-        android:fontFamily="@font/caveat_brush"
-        android:text="GUARDIÁN"
-        android:textColor="@color/aura_text_primary"
-        android:textSize="40sp"
-        android:textStyle="bold"
-        android:shadowColor="@color/aura_card_stroke"
-        android:shadowRadius="14"
-        android:shadowDx="0"
-        android:shadowDy="0" />
+        android:gravity="center"
+        android:orientation="vertical">
 
-    <!-- CONTENEDOR DE LOS DOS PANELES -->
+        <TextView
+            android:id="@+id/tvNombreExploradorVinculado"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed"
+            android:text="Explorador: Cargando..."
+            android:textColor="@color/aura_text_primary"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <!-- NAVEGACIÓN INFERIOR (3 Botones) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="3">
+
+            <LinearLayout
+                android:id="@+id/navPaginaGuardian"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Guardián"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navPerfil"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Perfil"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navConfiguraciones"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚙️"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Ajustes"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- PANELES CENTRALES (Historial y Mapa) -->
     <LinearLayout
         android:id="@+id/layoutPaneles"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tvTituloGuardian"
+        android:layout_below="@id/layoutTopGuardian"
+        android:layout_above="@id/cardBottomNav"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="12dp"
-        android:layout_above="@id/imageButtonRegresarGuardian"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:orientation="vertical"
         android:weightSum="2">
 
-        <!-- ─── PANEL SUPERIOR: Historial de notificaciones ─────── -->
+        <!-- Panel Historial -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardHistorial"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginBottom="10dp"
-            app:cardBackgroundColor="@color/aura_card_bg"
+            android:layout_marginBottom="8dp"
+            app:cardBackgroundColor="@color/login_card_bg"
             app:cardCornerRadius="28dp"
-            app:cardElevation="8dp"
-            app:strokeColor="@color/aura_card_stroke_subtle"
+            app:cardElevation="6dp"
+            app:strokeColor="@color/login_card_stroke"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="16dp">
 
-                <!-- Encabezado historial -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
+                    android:layout_marginBottom="8dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -101,54 +188,57 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:fontFamily="@font/caveat_brush"
-                        android:text="🔔  Historial de notificaciones"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="🔔  Historial"
                         android:textColor="@color/aura_text_primary"
-                        android:textSize="22sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnLimpiarHistorial"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:fontFamily="@font/caveat_brush"
+                        android:fontFamily="sans-serif-condensed"
                         android:text="Limpiar"
-                        android:textColor="@color/white"
+                        android:textColor="@color/login_btn_text"
                         android:textSize="14sp"
                         android:paddingStart="14dp"
                         android:paddingEnd="14dp"
-                        app:backgroundTint="@color/aura_btn_fill"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="0dp"
+                        android:gravity="center"
+                        android:minHeight="0dp"
+                        android:minWidth="0dp"
+                        app:backgroundTint="@color/login_btn_bg"
                         app:cornerRadius="18dp"
-                        app:strokeColor="@color/aura_btn_stroke"
+                        app:strokeColor="@color/login_btn_stroke"
                         app:strokeWidth="1dp" />
 
                 </LinearLayout>
 
-                <!-- Lista de notificaciones -->
                 <ListView
                     android:id="@+id/listViewNotificaciones"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="1"
-                    android:divider="@color/aura_card_stroke_subtle"
+                    android:divider="@color/login_card_stroke"
                     android:dividerHeight="1dp"
                     android:scrollbars="vertical" />
 
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ─── PANEL INFERIOR: Mapa última ubicación ─────────── -->
+        <!-- Panel Mapa -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardMapa"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginTop="10dp"
-            app:cardBackgroundColor="@color/aura_card_bg"
+            android:layout_marginTop="8dp"
+            app:cardBackgroundColor="@color/login_card_bg"
             app:cardCornerRadius="28dp"
-            app:cardElevation="8dp"
-            app:strokeColor="@color/aura_card_stroke_subtle"
+            app:cardElevation="6dp"
+            app:strokeColor="@color/login_card_stroke"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -156,38 +246,36 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <!-- Encabezado mapa -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="20dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="10dp">
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="8dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:fontFamily="@font/caveat_brush"
-                        android:text="📍  Última ubicación registrada"
+                        android:fontFamily="sans-serif-condensed"
+                        android:text="📍  Ubicación"
                         android:textColor="@color/aura_text_primary"
-                        android:textSize="22sp"
+                        android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvUltimaActualizacion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/caveat_brush"
+                        android:fontFamily="sans-serif-condensed"
                         android:text="Sin datos"
                         android:textColor="@color/aura_text_hint"
                         android:textSize="14sp" />
 
                 </LinearLayout>
 
-                <!-- WebView de OpenStreetMap ocupa el resto de la card -->
                 <WebView
                     android:id="@+id/webViewGuardian"
                     android:layout_width="match_parent"
@@ -197,9 +285,11 @@
                     android:layout_marginBottom="12dp" />
 
             </LinearLayout>
-
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 
 </RelativeLayout>
+
+
+
+

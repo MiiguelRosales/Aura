@@ -5,7 +5,6 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -42,13 +41,12 @@ public class PantallaCompartirCodigo extends BaseActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_vincular), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_compartir), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        final ImageButton imageButtonRegresar = findViewById(R.id.imageButtonRegresar);
         final EditText etCodigoVincular = findViewById(R.id.etCodigoVincular);
         final MaterialButton btnCompartir = findViewById(R.id.btnAceptarVinculo);
 
@@ -73,10 +71,6 @@ public class PantallaCompartirCodigo extends BaseActivity {
             Toast.makeText(this, "Código copiado y listo para compartir", Toast.LENGTH_SHORT).show();
         });
 
-        imageButtonRegresar.setOnClickListener(v -> {
-            Intent intent = new Intent(PantallaCompartirCodigo.this, PantallaJuegos.class);
-            startActivity(intent);
-        });
     }
 
     private void prepararCodigoExplorador(EditText etCodigoVincular, MaterialButton btnCompartir) {
@@ -136,6 +130,8 @@ public class PantallaCompartirCodigo extends BaseActivity {
     private String generarCodigoVinculacion(String exploradorId) {
         String limpio = exploradorId.replace("-", "").toUpperCase(Locale.ROOT);
         String base = limpio.length() >= 6 ? limpio.substring(limpio.length() - 6) : limpio;
+        // Eliminar caracteres ambiguos: 0 (cero) y O (letra) → Z
+        base = base.replace('0', 'Z').replace('O', 'Z');
         return "AURA-" + base;
     }
 
