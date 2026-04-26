@@ -45,9 +45,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:text="Explorador: Cargando..."
+            tools:text="Explorador: Cargando..."
             android:textColor="@color/aura_text_primary"
-            android:textSize="15sp" />
+            android:textSize="24sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- NAVEGACIÓN INFERIOR (3 Botones) -->
@@ -69,7 +70,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:gravity="center"
-            android:weightSum="3">
+            android:weightSum="4">
 
             <LinearLayout
                 android:id="@+id/navPaginaGuardian"
@@ -79,7 +80,8 @@
                 android:gravity="center"
                 android:orientation="vertical"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:background="@drawable/bg_nav_active">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -93,6 +95,30 @@
                     android:textColor="@color/aura_text_primary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navChat"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💬"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Chat"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <LinearLayout
@@ -270,7 +296,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="sans-serif-condensed"
-                        android:text="Sin datos"
+                        tools:text="Sin datos"
                         android:textColor="@color/aura_text_hint"
                         android:textSize="14sp" />
 

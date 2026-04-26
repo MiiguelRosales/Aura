@@ -52,6 +52,7 @@ public class PantallaGuardian extends BaseActivity {
     private static final String KEY_LAT = "lat";
     private static final String KEY_LNG = "lng";
     private static final String KEY_ESTADO = "estado";
+    private static final String KEY_ULTIMA_LIMPIEZA = "ultima_limpieza_ms";
     private static final int ZOOM_MAPA = 15;
 
     private WebView mapWebView;
@@ -131,9 +132,15 @@ public class PantallaGuardian extends BaseActivity {
         // ── Botón limpiar historial ───────────────────────────────────
         Button btnLimpiar = findViewById(R.id.btnLimpiarHistorial);
         btnLimpiar.setOnClickListener(v -> {
+            long ahora = System.currentTimeMillis();
+            getSharedPreferences(PREFS_AURA, MODE_PRIVATE)
+                    .edit()
+                    .putLong(KEY_ULTIMA_LIMPIEZA, ahora)
+                    .apply();
+            
             notificaciones.clear();
             adapterNotificaciones.notifyDataSetChanged();
-            Toast.makeText(this, "Historial limpiado", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Historial limpiado localmente", Toast.LENGTH_LONG).show();
         });
 
         // ── Navegación Inferior ───────────────────────────────────────
@@ -147,6 +154,13 @@ public class PantallaGuardian extends BaseActivity {
         LinearLayout navConfiguraciones = findViewById(R.id.navConfiguraciones);
         navConfiguraciones.setOnClickListener(v -> {
             startActivity(new Intent(PantallaGuardian.this, PantallaAjustes.class));
+            overridePendingTransition(0, 0);
+            finish();
+        });
+
+        LinearLayout navChat = findViewById(R.id.navChat);
+        navChat.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaGuardian.this, PantallaChat.class));
             overridePendingTransition(0, 0);
             finish();
         });
@@ -374,9 +388,7 @@ public class PantallaGuardian extends BaseActivity {
         }
 
         String guardianUid = user.getUid();
-        android.util.Log.d("PantallaGuardian", "Iniciando escucha de mensajes para: " + guardianUid);
         
-        // Detener escucha anterior si existe
         if (listenerMensajes != null) {
             listenerMensajes.remove();
         }
@@ -393,29 +405,27 @@ public class PantallaGuardian extends BaseActivity {
                     }
 
                     if (snapshot != null) {
-                        android.util.Log.d("PantallaGuardian", "Mensajes recibidos: " + snapshot.size());
-                        
-                        if (!snapshot.isEmpty()) {
-                            notificaciones.clear();
-                            for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        long ultimaLimpieza = getSharedPreferences(PREFS_AURA, MODE_PRIVATE)
+                                .getLong(KEY_ULTIMA_LIMPIEZA, 0);
+
+                        notificaciones.clear();
+                        for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                            Timestamp ts = doc.getTimestamp("timestamp");
+                            
+                            // Solo mostrar mensajes posteriores a la última limpieza
+                            if (ts != null && (ts.toDate().getTime() > ultimaLimpieza)) {
                                 String remitente = doc.getString("remitente");
                                 String contenido = doc.getString("contenido");
-                                Timestamp ts = doc.getTimestamp("timestamp");
-                                
-                                android.util.Log.d("PantallaGuardian", 
-                                        "Mensaje: " + remitente + " - " + contenido);
                                 
                                 if (contenido != null) {
-                                    String hora = ts != null ? formatearFechaActualizacion(ts.toDate()) : "";
+                                    String hora = formatearFechaActualizacion(ts.toDate());
                                     String mensaje = (remitente != null ? remitente + ": " : "") + 
                                                    contenido + " · " + hora;
                                     notificaciones.add(mensaje);
                                 }
                             }
-                            adapterNotificaciones.notifyDataSetChanged();
-                        } else {
-                            android.util.Log.d("PantallaGuardian", "Sin mensajes");
                         }
+                        adapterNotificaciones.notifyDataSetChanged();
                     }
                 });
     }
@@ -486,7 +496,7 @@ public class PantallaGuardian extends BaseActivity {
 
     private String formatearFechaActualizacion(@NonNull Date fecha) {
         Locale locale = new Locale("es", "MX");
-        SimpleDateFormat formato = new SimpleDateFormat("dd MMM · HH:mm", locale);
+        SimpleDateFormat formato = new SimpleDateFormat("dd MMM · hh:mm a", locale);
         return formato.format(fecha);
     }
 

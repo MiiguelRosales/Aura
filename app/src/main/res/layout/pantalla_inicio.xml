@@ -77,7 +77,7 @@
             android:layout_gravity="center"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.15"
-            android:text="COMENZAR"
+            android:text="Comenzar"
             android:textAllCaps="true"
             android:textColor="@color/inicio_text_primary"
             android:textSize="15sp"

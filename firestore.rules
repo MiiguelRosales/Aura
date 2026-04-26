@@ -1,21 +1,75 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function esTipoUsuarioValido(tipo) {
+      return tipo in ['GUARDIAN', 'EXPLORADOR'];
+    }
+
+    function esNombreUsuarioValido(nombre) {
+      return nombre is string
+        && nombre.matches('^[A-Za-z]{1,12}$')
+        && nombre.matches('^.*[A-Z].*$');
+    }
+
+    function esCelularValido(celular) {
+      return celular is string
+        && celular.matches('^[0-9]{10}$');
+    }
+
+    function esFechaNacimientoValida(fecha) {
+      return fecha is string
+        && fecha.matches('^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/[0-9]{4}$');
+    }
+
+    function esCorreoValido(correo) {
+      return correo is string
+        && correo.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$');
+    }
+
+    function esPerfilValido(data, userId) {
+      return data.uid == userId
+        && esNombreUsuarioValido(data.nombreUsuario)
+        && esCorreoValido(data.correo)
+        && esCelularValido(data.celular)
+        && esFechaNacimientoValida(data.fechaNacimiento)
+        && esTipoUsuarioValido(data.tipoUsuario);
+    }
+
     match /configuracion/{configId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null;
     }
 
     match /usuarios/{userId} {
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && esPerfilValido(request.resource.data, userId);
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
         resource.data.guardianVinculadoId == request.auth.uid ||
         resource.data.exploradorVinculadoId == request.auth.uid
       );
       allow update: if request.auth != null && (
-        request.auth.uid == userId ||
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['guardianVinculadoId', 'exploradorVinculadoId', 'codigoVinculado', 'vinculadoEn']))
+        (
+          request.auth.uid == userId && (
+            esPerfilValido(request.resource.data, userId) ||
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'fotoPerfilBase64',
+              'fotoPerfilUrl',
+              'actualizadoEn',
+              'estadoConexion',
+              'ultimaConexion'
+            ])
+          )
+        ) ||
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'guardianVinculadoId',
+            'exploradorVinculadoId',
+            'codigoVinculado',
+            'vinculadoEn'
+          ])
+        )
       );
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
@@ -31,6 +85,38 @@ service cloud.firestore {
     match /mensajes/{guardianId}/historial/{messageId} {
       allow create: if request.auth != null;
       allow read, delete: if request.auth != null && request.auth.uid == guardianId;
+    }
+
+    match /chats/{chatId} {
+      allow create: if request.auth != null
+        && request.auth.uid in [request.resource.data.guardianId, request.resource.data.exploradorId];
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid in [resource.data.guardianId, resource.data.exploradorId];
+
+      match /mensajes/{messageId} {
+        allow create: if request.auth != null
+          && exists(/databases/$(database)/documents/chats/$(chatId))
+          && request.auth.uid in [
+            get(/databases/$(database)/documents/chats/$(chatId)).data.guardianId,
+            get(/databases/$(database)/documents/chats/$(chatId)).data.exploradorId
+          ]
+          && request.resource.data.remitenteId == request.auth.uid;
+
+        allow read: if request.auth != null
+          && exists(/databases/$(database)/documents/chats/$(chatId))
+          && request.auth.uid in [
+            get(/databases/$(database)/documents/chats/$(chatId)).data.guardianId,
+            get(/databases/$(database)/documents/chats/$(chatId)).data.exploradorId
+          ];
+
+        allow update, delete: if request.auth != null
+          && request.auth.uid == resource.data.remitenteId;
+      }
+    }
+
+    match /soporte_tecnico/{id} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
     }
   }
 }

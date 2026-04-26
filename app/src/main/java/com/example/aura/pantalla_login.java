@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.text.InputType;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.LinearLayout;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -26,6 +27,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestore;
 import androidx.appcompat.app.AlertDialog;
 
+import java.util.regex.Pattern;
+
 public class pantalla_login extends BaseActivity {
 
     private static final String PREFS_NAME = "AuraPrefs";
@@ -35,6 +38,7 @@ public class pantalla_login extends BaseActivity {
     private static final String KEY_CONTRASENA_LOGIN = "contrasenaLogin";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
+    private static final Pattern PATRON_PASSWORD = Pattern.compile("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{8,12}$");
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -49,7 +53,9 @@ public class pantalla_login extends BaseActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_login), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            int bottomPadding = Math.max(systemBars.bottom, ime.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomPadding);
             return insets;
         });
 
@@ -85,7 +91,7 @@ public class pantalla_login extends BaseActivity {
             if (isChecked) {
                 if (TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
                     cbGuardarInicioSesion.setChecked(false);
-                    Toast.makeText(this, "Completa correo y contraseña primero", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Completa correo y contraseña primero", Toast.LENGTH_LONG).show();
                     return;
                 }
 
@@ -95,7 +101,7 @@ public class pantalla_login extends BaseActivity {
                         .putString(KEY_CONTRASENA_LOGIN, contrasena)
                         .apply();
 
-                Toast.makeText(this, "Inicio de sesión guardado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Inicio de sesión guardado", Toast.LENGTH_LONG).show();
             } else {
                 prefs.edit()
                         .putBoolean(KEY_GUARDAR_LOGIN, false)
@@ -103,7 +109,7 @@ public class pantalla_login extends BaseActivity {
                         .remove(KEY_CONTRASENA_LOGIN)
                         .apply();
 
-                Toast.makeText(this, "Credenciales olvidadas", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Credenciales olvidadas", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -112,7 +118,12 @@ public class pantalla_login extends BaseActivity {
             String contrasena = etContrasena.getText().toString().trim();
 
             if (TextUtils.isEmpty(correo) || TextUtils.isEmpty(contrasena)) {
-                Toast.makeText(this, "Completa correo y contraseña", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Completa correo y contraseña", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                Toast.makeText(this, "El correo es incorrecto", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -145,8 +156,8 @@ public class pantalla_login extends BaseActivity {
                 .setView(container)
                 .setPositiveButton("Enviar", (dialog, which) -> {
                     String correo = inputCorreo.getText().toString().trim();
-                    if (TextUtils.isEmpty(correo)) {
-                        Toast.makeText(this, "Ingresa un correo válido", Toast.LENGTH_SHORT).show();
+                    if (TextUtils.isEmpty(correo) || !Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                        Toast.makeText(this, "Ingresa un correo válido", Toast.LENGTH_LONG).show();
                         return;
                     }
 
@@ -169,7 +180,14 @@ public class pantalla_login extends BaseActivity {
                 .addOnSuccessListener(authResult -> {
                     if (authResult.getUser() == null) {
                         btnIniciarSesion.setEnabled(true);
-                        Toast.makeText(this, "No se pudo recuperar usuario", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No se pudo recuperar usuario", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    if (!authResult.getUser().isEmailVerified()) {
+                        btnIniciarSesion.setEnabled(true);
+                        Toast.makeText(this, "Por favor, verifica tu correo electrónico antes de entrar.", Toast.LENGTH_LONG).show();
+                        auth.signOut();
                         return;
                     }
 
@@ -180,14 +198,14 @@ public class pantalla_login extends BaseActivity {
                             .addOnSuccessListener(documentSnapshot -> {
                                 if (!documentSnapshot.exists()) {
                                     btnIniciarSesion.setEnabled(true);
-                                    Toast.makeText(this, "Perfil no encontrado", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Perfil no encontrado", Toast.LENGTH_LONG).show();
                                     return;
                                 }
 
                                 String tipoReal = documentSnapshot.getString("tipoUsuario");
                                 if (tipoReal == null) {
                                     btnIniciarSesion.setEnabled(true);
-                                    Toast.makeText(this, "Perfil incompleto", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(this, "Perfil incompleto", Toast.LENGTH_LONG).show();
                                     return;
                                 }
 
@@ -216,7 +234,7 @@ public class pantalla_login extends BaseActivity {
                                     intentDestino = new Intent(pantalla_login.this, PantallaJuegos.class);
                                 }
 
-                                Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();
                                 startActivity(intentDestino);
                                 finish();
                             })
@@ -232,12 +250,20 @@ public class pantalla_login extends BaseActivity {
                 })
                 .addOnFailureListener(e -> {
                     btnIniciarSesion.setEnabled(true);
-                    String detalle = e.getMessage();
                     if (e instanceof FirebaseAuthException) {
                         String code = ((FirebaseAuthException) e).getErrorCode();
-                        detalle = "[" + code + "] " + detalle;
+                        if (code.equals("ERROR_USER_NOT_FOUND") || code.equals("user-not-found")) {
+                            Toast.makeText(this, "El correo es incorrecto", Toast.LENGTH_LONG).show();
+                            return;
+                        } else if (code.equals("ERROR_WRONG_PASSWORD") || code.equals("wrong-password")) {
+                            Toast.makeText(this, "La contraseña es incorrecta", Toast.LENGTH_LONG).show();
+                            return;
+                        } else if (code.equals("ERROR_INVALID_CREDENTIAL") || code.equals("invalid-credential") || code.equals("INVALID_LOGIN_CREDENTIALS")) {
+                            Toast.makeText(this, "Correo o contraseña incorrectos", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                     }
-                    showMessage("Error de login: " + detalle);
+                    showMessage("Error de login: " + e.getMessage());
                 });
     }
 }

@@ -50,7 +50,7 @@
             android:layout_height="match_parent"
             android:orientation="horizontal"
             android:gravity="center"
-            android:weightSum="3">
+            android:weightSum="4">
 
             <LinearLayout
                 android:id="@+id/navPaginaGuardian"
@@ -74,6 +74,30 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="Guardián"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/navChat"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true"
+                android:alpha="0.4">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💬"
+                    android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-condensed"
+                    android:text="Chat"
                     android:textColor="@color/aura_text_hint"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -110,7 +134,8 @@
                 android:gravity="center"
                 android:orientation="vertical"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:background="@drawable/bg_nav_active">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -129,24 +154,36 @@
     </com.google.android.material.card.MaterialCardView>
 
     <!-- PANEL CENTRAL (Ajustes) -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardAjustes"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="100dp"
-        app:cardBackgroundColor="@color/login_card_bg"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="6dp"
-        app:strokeColor="@color/login_card_stroke"
-        app:strokeWidth="1dp">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/cardBottomNav"
+        android:fillViewport="true"
+        android:fadeScrollbars="false"
+        android:scrollbars="none">
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
+            android:gravity="center"
+            android:padding="20dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAjustes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                app:cardBackgroundColor="@color/login_card_bg"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="6dp"
+                app:strokeColor="@color/login_card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
             <!-- Toggle de Tema -->
             <LinearLayout
@@ -195,7 +232,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="32dp"
                 android:fontFamily="sans-serif-condensed"
-                android:text="VINCULACIÓN"
+                android:text="Vinculación"
                 android:textColor="@color/login_btn_text"
                 android:textSize="14sp"
                 android:visibility="gone"
@@ -211,7 +248,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="32dp"
                 android:fontFamily="sans-serif-condensed"
-                android:text="TOKEN DE VINCULACIÓN"
+                android:text="Token de vinculación"
                 android:textColor="@color/login_btn_text"
                 android:textSize="14sp"
                 android:visibility="gone"
@@ -227,7 +264,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-condensed"
-                android:text="SOPORTE TÉCNICO"
+                android:text="Soporte técnico"
                 android:textColor="@color/login_btn_text"
                 android:textSize="14sp"
                 app:backgroundTint="@color/login_btn_bg"
@@ -242,7 +279,7 @@
                 android:layout_height="44dp"
                 android:layout_marginTop="16dp"
                 android:fontFamily="sans-serif-condensed"
-                android:text="CERRAR SESIÓN"
+                android:text="Cerrar sesión"
                 android:textColor="@color/login_btn_text"
                 android:textSize="14sp"
                 app:backgroundTint="@color/login_btn_bg"
@@ -251,7 +288,9 @@
                 app:strokeWidth="1dp" />
 
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.card.MaterialCardView>
+        </RelativeLayout>
+    </ScrollView>
 
     <!-- VERSIÓN DE LA APP -->
     <TextView

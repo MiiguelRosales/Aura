@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +41,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -50,8 +52,6 @@ public class PantallaJuegos extends BaseActivity {
     private static final String CHANNEL_ID = "juego_notificaciones";
     private static final int NOTIFICATION_ID = 1;
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
-    // Objetivo real: 24 horas. Durante pruebas usamos 2 minutos.
-    private static final long TIEMPO_LIMITE_CONFIRMACION_MS = 2 * 60 * 1000L;
     private static final long INTERVALO_CONTADOR_MS = 1_000L;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
@@ -71,7 +71,17 @@ public class PantallaJuegos extends BaseActivity {
     private TextView tvContadorListo;
     private CountDownTimer contadorListo;
     private boolean listoConfirmado;
-    private boolean alertaTimeoutEnviada;
+
+    // Referencias para el simulador
+    private ScrollView scrollViewJuegos;
+    private LinearLayout layoutSimuladorJuego;
+    private View cardJuego1;
+    private Button btnSimularGanar;
+    private Button btnSimularSalir;
+
+    private static final String PREFS_JUEGO = "JuegoPrefs";
+    private static final String KEY_FECHA_GANADO = "fecha_juego_ganado";
+    private static final String KEY_LISTO_CONFIRMADO = "listo_confirmado_hoy";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -132,29 +142,81 @@ public class PantallaJuegos extends BaseActivity {
             finish();
         });
 
+        LinearLayout navChat = findViewById(R.id.navChat);
+        navChat.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaJuegos.this, PantallaChat.class));
+            overridePendingTransition(0, 0);
+            finish();
+        });
+
         btnAccionJuegos = findViewById(R.id.btnAccionJuegos);
         tvContadorListo = findViewById(R.id.tvContadorListo);
 
-        btnAccionJuegos.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                confirmarListo();
-            }
+        scrollViewJuegos = findViewById(R.id.scrollViewJuegos);
+        layoutSimuladorJuego = findViewById(R.id.layoutSimuladorJuego);
+        cardJuego1 = findViewById(R.id.cardJuego1);
+        btnSimularGanar = findViewById(R.id.btnSimularGanar);
+        btnSimularSalir = findViewById(R.id.btnSimularSalir);
+
+        btnAccionJuegos.setOnClickListener(v -> confirmarListo());
+
+        cardJuego1.setOnClickListener(v -> {
+            scrollViewJuegos.setVisibility(View.GONE);
+            layoutSimuladorJuego.setVisibility(View.VISIBLE);
+        });
+
+        btnSimularGanar.setOnClickListener(v -> {
+            marcarJuegoGanadoHoy();
+            habilitarBotonListo();
+            scrollViewJuegos.setVisibility(View.VISIBLE);
+            layoutSimuladorJuego.setVisibility(View.GONE);
+            Toast.makeText(this, "¡Nivel superado! Botón Listo desbloqueado", Toast.LENGTH_SHORT).show();
+        });
+
+        btnSimularSalir.setOnClickListener(v -> {
+            scrollViewJuegos.setVisibility(View.VISIBLE);
+            layoutSimuladorJuego.setVisibility(View.GONE);
         });
     }
 
-    private void confirmarListo() {
-        if (listoConfirmado) {
-            return;
+    private String obtenerFechaActualStr() {
+        return new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
+    }
+
+    private void marcarJuegoGanadoHoy() {
+        getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+                .putString(KEY_FECHA_GANADO, obtenerFechaActualStr())
+                .apply();
+    }
+
+    private boolean fueJuegoGanadoHoy() {
+        String fechaGanado = getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE)
+                .getString(KEY_FECHA_GANADO, "");
+        return obtenerFechaActualStr().equals(fechaGanado);
+    }
+
+    private void habilitarBotonListo() {
+        if (!listoConfirmado) {
+            btnAccionJuegos.setEnabled(true);
+            btnAccionJuegos.setClickable(true);
+            btnAccionJuegos.setAlpha(1.0f);
         }
+    }
+
+    private void confirmarListo() {
+        if (listoConfirmado) return;
 
         listoConfirmado = true;
-        detenerContadorListo();
+        // Guardar que ya se confirmó hoy
+        getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+                .putString(KEY_LISTO_CONFIRMADO, obtenerFechaActualStr())
+                .apply();
 
+        // IMPORTANTE: NO detenemos el contador, sigue hasta medianoche
         btnAccionJuegos.setEnabled(false);
         btnAccionJuegos.setClickable(false);
         btnAccionJuegos.setAlpha(0.5f);
-        tvContadorListo.setText("Confirmacion enviada al Guardian");
+        enviarMensajeAlGuardian("TODO BIEN 👌🏻", "listo_confirmado");
 
         verificarYMostrarNotificacion();
     }
@@ -188,8 +250,8 @@ public class PantallaJuegos extends BaseActivity {
     private void mostrarNotificacionJuego() {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle("Confirmacion enviada")
-                .setContentText("Le avisamos a tu Guardian que ya terminaste")
+                .setContentTitle("Confirmación enviada")
+                .setContentText("Todo bien 👌🏻")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
@@ -199,61 +261,91 @@ public class PantallaJuegos extends BaseActivity {
             notificationManager.notify(NOTIFICATION_ID, builder.build());
         }
 
-        enviarMensajeAlGuardian(
-                "Confirmo que ya termine y estoy listo.",
-                "listo_confirmado"
-        );
     }
 
     private void iniciarContadorListo() {
         detenerContadorListo();
-        listoConfirmado = false;
-        alertaTimeoutEnviada = false;
 
+        // Recuperar estado del día actual
+        String fechaConfirmado = getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE)
+                .getString(KEY_LISTO_CONFIRMADO, "");
+        listoConfirmado = obtenerFechaActualStr().equals(fechaConfirmado);
+
+        // Configurar botón según el estado
         if (btnAccionJuegos != null) {
-            btnAccionJuegos.setEnabled(true);
-            btnAccionJuegos.setClickable(true);
-            btnAccionJuegos.setAlpha(1f);
+            if (fueJuegoGanadoHoy() && !listoConfirmado) {
+                habilitarBotonListo();
+            } else {
+                btnAccionJuegos.setEnabled(false);
+                btnAccionJuegos.setClickable(false);
+                btnAccionJuegos.setAlpha(0.5f);
+            }
         }
 
-        if (tvContadorListo != null) {
-            tvContadorListo.setText("Tiempo para confirmar: 02:00");
-        }
+        // Calcular tiempo hasta la próxima medianoche
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        long now = c.getTimeInMillis();
+        c.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        c.set(java.util.Calendar.MINUTE, 0);
+        c.set(java.util.Calendar.SECOND, 0);
+        c.set(java.util.Calendar.MILLISECOND, 0);
+        c.add(java.util.Calendar.DAY_OF_MONTH, 1);
+        long midnight = c.getTimeInMillis();
+        long diff = midnight - now;
 
-        contadorListo = new CountDownTimer(TIEMPO_LIMITE_CONFIRMACION_MS, INTERVALO_CONTADOR_MS) {
+        contadorListo = new CountDownTimer(diff, INTERVALO_CONTADOR_MS) {
             @Override
             public void onTick(long millisUntilFinished) {
                 long totalSegundos = millisUntilFinished / 1000;
-                long minutos = totalSegundos / 60;
+                long horas = totalSegundos / 3600;
+                long minutos = (totalSegundos % 3600) / 60;
                 long segundos = totalSegundos % 60;
+
                 if (tvContadorListo != null) {
                     tvContadorListo.setText(String.format(Locale.getDefault(),
-                            "Tiempo para confirmar: %02d:%02d", minutos, segundos));
+                            "%02d:%02d:%02d", horas, minutos, segundos));
+
+                    if (horas >= 10) {
+                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#00E676"));
+                    } else if (horas >= 5) {
+                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                    } else {
+                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#F44336"));
+                    }
                 }
             }
 
             @Override
             public void onFinish() {
-                if (listoConfirmado || alertaTimeoutEnviada) {
-                    return;
-                }
-
-                alertaTimeoutEnviada = true;
-
                 if (tvContadorListo != null) {
-                    tvContadorListo.setText("Tiempo agotado: contacta a tu Guardian");
+                    tvContadorListo.setText("00:00:00");
+                    tvContadorListo.setTextColor(android.graphics.Color.parseColor("#F44336"));
                 }
 
+                // Lógica principal: Solo enviar alerta si NO ganaron el juego hoy
+                if (!fueJuegoGanadoHoy()) {
+                    enviarMensajeAlGuardian(
+                            "ES IMPORTANTE QUE TE COMUNIQUES CON TU EXPLORADOR",
+                            "alerta_timeout_critico"
+                    );
+                }
+
+                // Limpiar variables para el nuevo día
+                getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+                        .remove(KEY_FECHA_GANADO)
+                        .remove(KEY_LISTO_CONFIRMADO)
+                        .apply();
+                listoConfirmado = false;
+
+                // Bloquear botón nuevamente
                 if (btnAccionJuegos != null) {
                     btnAccionJuegos.setEnabled(false);
                     btnAccionJuegos.setClickable(false);
                     btnAccionJuegos.setAlpha(0.5f);
                 }
 
-                enviarMensajeAlGuardian(
-                        "No se recibio confirmacion de Listo en 2 minutos. Ponte en contacto con tu Explorador.",
-                        "alerta_timeout_liberacion"
-                );
+                // Reiniciar el contador para el siguiente día (24h)
+                iniciarContadorListo();
             }
         };
 
@@ -420,5 +512,51 @@ public class PantallaJuegos extends BaseActivity {
                             "Error al enviar mensaje: " + e.getMessage(),
                             Toast.LENGTH_SHORT).show();
                 });
+
+            if (exploradorUid != null) {
+                enviarMensajeEnChatVinculado(contenido, tipo);
+            }
+            }
+
+            private void enviarMensajeEnChatVinculado(@NonNull String contenido, @NonNull String tipo) {
+            if (guardianVinculadoId == null || guardianVinculadoId.trim().isEmpty() || exploradorUid == null) {
+                return;
+            }
+
+            String chatId = construirChatId(guardianVinculadoId, exploradorUid);
+            Map<String, Object> mensaje = new HashMap<>();
+            mensaje.put("remitenteId", exploradorUid);
+            mensaje.put("remitenteNombre", nombreExplorador != null ? nombreExplorador : "Explorador");
+            mensaje.put("contenido", contenido);
+            mensaje.put("tipo", tipo);
+            mensaje.put("timestamp", FieldValue.serverTimestamp());
+
+            Map<String, Object> conversacion = new HashMap<>();
+            conversacion.put("guardianId", guardianVinculadoId);
+            conversacion.put("exploradorId", exploradorUid);
+            conversacion.put("actualizadoEn", FieldValue.serverTimestamp());
+
+            firestore.collection("chats")
+                .document(chatId)
+                .set(conversacion, SetOptions.merge());
+
+            String messageId = firestore.collection("chats")
+                .document(chatId)
+                .collection("mensajes")
+                .document().getId();
+
+            firestore.collection("chats")
+                .document(chatId)
+                .collection("mensajes")
+                .document(messageId)
+                .set(mensaje)
+                .addOnSuccessListener(aVoid -> android.util.Log.d("PantallaJuegos",
+                    "Mensaje de chat guardado: " + messageId))
+                .addOnFailureListener(e -> android.util.Log.e("PantallaJuegos",
+                    "Error al guardar mensaje de chat", e));
+            }
+
+            private String construirChatId(@NonNull String guardianId, @NonNull String exploradorId) {
+            return guardianId + "_" + exploradorId;
     }
 }

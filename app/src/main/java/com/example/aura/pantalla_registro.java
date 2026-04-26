@@ -3,7 +3,10 @@ package com.example.aura;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -25,8 +28,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class pantalla_registro extends BaseActivity {
 
@@ -34,6 +39,10 @@ public class pantalla_registro extends BaseActivity {
     private static final String KEY_TIPO_USUARIO = "tipoUsuario";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
+    private static final Pattern PATRON_USUARIO = Pattern.compile("^[A-Za-z]{1,12}$");
+    private static final Pattern PATRON_TELEFONO = Pattern.compile("^[0-9]{10}$");
+    private static final Pattern PATRON_PASSWORD = Pattern.compile("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{8,12}$");
+    private static final Pattern PATRON_LOCAL_CORREO = Pattern.compile("^[A-Za-z0-9._%+-]{1,25}$");
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
@@ -48,7 +57,9 @@ public class pantalla_registro extends BaseActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_registro), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            int bottomPadding = Math.max(systemBars.bottom, ime.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomPadding);
             return insets;
         });
 
@@ -65,6 +76,8 @@ public class pantalla_registro extends BaseActivity {
         final EditText etCelular = findViewById(R.id.etCelular);
         final EditText etContrasena = findViewById(R.id.etContrasena);
         final EditText etConfirmarContrasena = findViewById(R.id.etConfirmarContrasena);
+
+        configurarAutoAvanceFecha(etDia, etMes, etAnio);
 
         //AQUI SE CARGA EL FONDO ANIMADO CON GLIDE
 //        Glide.with(this)
@@ -122,25 +135,66 @@ public class pantalla_registro extends BaseActivity {
             String contrasena = etContrasena.getText().toString().trim();
             String confirmarContrasena = etConfirmarContrasena.getText().toString().trim();
 
-            if (TextUtils.isEmpty(nombre) || TextUtils.isEmpty(dia) || TextUtils.isEmpty(mes)
-                    || TextUtils.isEmpty(anio) || TextUtils.isEmpty(correoLocal)
-                    || TextUtils.isEmpty(dominio) || TextUtils.isEmpty(celular)
-                    || TextUtils.isEmpty(contrasena) || TextUtils.isEmpty(confirmarContrasena)) {
-                Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(nombre)) {
+                Toast.makeText(this, "Ingresa un nombre de usuario", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!PATRON_USUARIO.matcher(nombre).matches()) {
+                Toast.makeText(this, "Nombre de usuario: solo letras (máx 12)", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if (contrasena.length() < 8) {
-                Toast.makeText(this, "La contraseña debe tener al menos 8 caracteres", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(dia) || TextUtils.isEmpty(mes) || TextUtils.isEmpty(anio)) {
+                Toast.makeText(this, "Completa tu fecha de nacimiento", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!esFechaValida(dia, mes, anio)) {
+                Toast.makeText(this, "Fecha de nacimiento inválida", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            if (!contrasena.equals(confirmarContrasena)) {
-                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(correoLocal)) {
+                Toast.makeText(this, "Ingresa tu correo electrónico", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!PATRON_LOCAL_CORREO.matcher(correoLocal).matches()) {
+                Toast.makeText(this, "El formato del correo es inválido", Toast.LENGTH_LONG).show();
                 return;
             }
 
             String correo = correoLocal + "@" + dominio;
+            if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                Toast.makeText(this, "Correo electrónico inválido", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (TextUtils.isEmpty(celular)) {
+                Toast.makeText(this, "Ingresa tu número de celular", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!PATRON_TELEFONO.matcher(celular).matches()) {
+                Toast.makeText(this, "El celular debe tener 10 dígitos", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (TextUtils.isEmpty(contrasena)) {
+                Toast.makeText(this, "Ingresa una contraseña", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!PATRON_PASSWORD.matcher(contrasena).matches()) {
+                Toast.makeText(this, "Contraseña: 8-12 caracteres, solo minúsculas y números", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            if (TextUtils.isEmpty(confirmarContrasena)) {
+                Toast.makeText(this, "Confirma tu contraseña", Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (!contrasena.equals(confirmarContrasena)) {
+                Toast.makeText(this, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             String fechaNacimiento = dia + "/" + mes + "/" + anio;
 
             btnRegistrar.setEnabled(false);
@@ -151,10 +205,10 @@ public class pantalla_registro extends BaseActivity {
 
     private void actualizarInfoTipoUsuario(TextView tvInfoTipoUsuario, String tipo) {
         if (TIPO_GUARDIAN.equals(tipo)) {
-            tvInfoTipoUsuario.setText("Modo Guardián: cuidas y monitoreas a tu Explorador.");
+            tvInfoTipoUsuario.setText("Modo guardián: cuidas y monitoreas a tu explorador.");
             tvInfoTipoUsuario.setVisibility(View.VISIBLE);
         } else if (TIPO_EXPLORADOR.equals(tipo)) {
-            tvInfoTipoUsuario.setText("Modo Explorador: recibes acompañamiento y protección de tu Guardián.");
+            tvInfoTipoUsuario.setText("Modo explorador: recibes acompañamiento y protección de tu guardián.");
             tvInfoTipoUsuario.setVisibility(View.VISIBLE);
         } else {
             tvInfoTipoUsuario.setVisibility(View.GONE);
@@ -172,7 +226,7 @@ public class pantalla_registro extends BaseActivity {
                 .addOnSuccessListener(authResult -> {
                     if (authResult.getUser() == null) {
                         btnRegistrar.setEnabled(true);
-                        Toast.makeText(this, "No se pudo obtener usuario", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "No se pudo obtener usuario", Toast.LENGTH_LONG).show();
                         return;
                     }
 
@@ -205,12 +259,15 @@ public class pantalla_registro extends BaseActivity {
                                         .putString(KEY_TIPO_USUARIO, tipoUsuario)
                                         .apply();
 
-                                Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+                                if (authResult.getUser() != null) {
+                                    authResult.getUser().sendEmailVerification();
+                                }
 
-                                Intent intentDestino = TIPO_GUARDIAN.equals(tipoUsuario)
-                                    ? new Intent(this, PantallaVincular.class)
-                                        : new Intent(this, PantallaJuegos.class);
-                                startActivity(intentDestino);
+                                Toast.makeText(this, "Registro exitoso. Revisa tu correo para verificar tu cuenta.", Toast.LENGTH_LONG).show();
+
+                                Intent intent = new Intent(this, pantalla_login.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
                                 finish();
                             })
                             .addOnFailureListener(e -> {
@@ -232,5 +289,126 @@ public class pantalla_registro extends BaseActivity {
                     }
                     showMessage("Error al registrar: " + detalle);
                 });
+    }
+
+    private void configurarAutoAvanceFecha(EditText etDia, EditText etMes, EditText etAnio) {
+        // Validación en tiempo real para el Día
+        etDia.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    try {
+                        int val = Integer.parseInt(s.toString());
+                        if (val > 31) s.replace(0, s.length(), "31");
+                        else if (val == 0 && s.length() == 2) s.replace(0, s.length(), "01");
+                        else if (s.length() == 1 && val > 3 && val <= 9) {
+                            s.replace(0, s.length(), "0" + val);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+                if (s.length() == 2) {
+                    etMes.requestFocus();
+                }
+            }
+        });
+
+        // Validación en tiempo real para el Mes
+        etMes.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 0) {
+                    try {
+                        int val = Integer.parseInt(s.toString());
+                        if (val > 12) s.replace(0, s.length(), "12");
+                        else if (val == 0 && s.length() == 2) s.replace(0, s.length(), "01");
+                        else if (s.length() == 1 && val > 1 && val <= 9) {
+                            s.replace(0, s.length(), "0" + val);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+                if (s.length() == 2) {
+                    validarYAjustarDia(etDia, etMes, etAnio);
+                    etAnio.requestFocus();
+                }
+            }
+        });
+
+        // Validación en tiempo real para el Año
+        etAnio.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() == 4) {
+                    try {
+                        int anio = Integer.parseInt(s.toString());
+                        int anioActual = Calendar.getInstance().get(Calendar.YEAR);
+                        if (anio > anioActual) {
+                            s.replace(0, s.length(), String.valueOf(anioActual));
+                        } else if (anio < 1900) {
+                            etAnio.setError("Mínimo 1900");
+                        }
+                        validarYAjustarDia(etDia, etMes, etAnio);
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+        });
+    }
+
+    private void validarYAjustarDia(EditText etDia, EditText etMes, EditText etAnio) {
+        String dStr = etDia.getText().toString();
+        String mStr = etMes.getText().toString();
+        String aStr = etAnio.getText().toString();
+
+        if (dStr.isEmpty() || mStr.isEmpty()) return;
+
+        try {
+            int d = Integer.parseInt(dStr);
+            int m = Integer.parseInt(mStr);
+            int a = aStr.length() == 4 ? Integer.parseInt(aStr) : 2000; // Año default para bisiestos si no hay año
+
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, a);
+            cal.set(Calendar.MONTH, m - 1);
+            int maxDia = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+            if (d > maxDia) {
+                etDia.setText(String.format("%02d", maxDia));
+                Toast.makeText(this, "Ajustado a " + maxDia + " días para este mes", Toast.LENGTH_LONG).show();
+            }
+        } catch (NumberFormatException ignored) {}
+    }
+
+    private void agregarWatcherAutoAvance(EditText actual, int longitudObjetivo, EditText siguiente) {
+        // Este método ya no se usa, se reemplazó por la lógica individual de arriba
+    }
+
+    private boolean esFechaValida(String diaText, String mesText, String anioText) {
+        try {
+            int d = Integer.parseInt(diaText);
+            int m = Integer.parseInt(mesText);
+            int a = Integer.parseInt(anioText);
+
+            Calendar cal = Calendar.getInstance();
+            int anioActual = cal.get(Calendar.YEAR);
+
+            if (a < 1900 || a > anioActual) return false;
+            if (m < 1 || m > 12) return false;
+
+            // Validar días según el mes
+            cal.setLenient(false);
+            cal.set(Calendar.YEAR, a);
+            cal.set(Calendar.MONTH, m - 1);
+            cal.set(Calendar.DAY_OF_MONTH, d);
+            cal.getTime(); // Esto lanzará excepción si la fecha es inválida (ej. 30 de febrero)
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

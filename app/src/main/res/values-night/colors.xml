@@ -32,9 +32,9 @@
     <color name="inicio_btn_bg">#2EA8FF</color>
     <color name="inicio_btn_stroke">#7FD6FF</color>
     <color name="inicio_btn_ripple">#66AEDDFF</color>
-    <color name="inicio_glow_start">#80469DFF</color>
-    <color name="inicio_glow_center">#403D89DB</color>
-    <color name="inicio_glow_end">#003A74BF</color>
+    <color name="inicio_glow_start">#9934D399</color>
+    <color name="inicio_glow_center">#5534D399</color>
+    <color name="inicio_glow_end">#0034D399</color>
 
     <!-- Pantalla login (night) -->
     <color name="login_bg_start">#08152E</color>
