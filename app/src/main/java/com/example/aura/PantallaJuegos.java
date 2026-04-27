@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -19,6 +20,13 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+import android.util.TypedValue;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -26,7 +34,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -42,6 +49,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -66,6 +74,7 @@ public class PantallaJuegos extends BaseActivity {
     private String codigoExplorador;
     private String nombreExplorador;
     private String guardianVinculadoId;
+    private boolean accesoJuegosPermitido;
 
     private Button btnAccionJuegos;
     private TextView tvContadorListo;
@@ -98,6 +107,14 @@ public class PantallaJuegos extends BaseActivity {
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Registrar token FCM cada vez que se entra por seguridad
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+            if (auth.getCurrentUser() != null) {
+                firestore.collection("usuarios").document(auth.getCurrentUser().getUid())
+                        .update("fcmToken", token);
+            }
+        });
 
         configurarSolicitudUbicacion();
         configurarCallbackUbicacion();
@@ -183,14 +200,24 @@ public class PantallaJuegos extends BaseActivity {
         return new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new java.util.Date());
     }
 
+    private String obtenerPrefsJuegosNombre() {
+        FirebaseUser user = auth.getCurrentUser();
+        String uid = user != null ? user.getUid() : exploradorUid;
+        return uid == null ? PREFS_JUEGO : PREFS_JUEGO + "_" + uid;
+    }
+
+    private SharedPreferences obtenerPrefsJuegos() {
+        return getSharedPreferences(obtenerPrefsJuegosNombre(), MODE_PRIVATE);
+    }
+
     private void marcarJuegoGanadoHoy() {
-        getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+        obtenerPrefsJuegos().edit()
                 .putString(KEY_FECHA_GANADO, obtenerFechaActualStr())
                 .apply();
     }
 
     private boolean fueJuegoGanadoHoy() {
-        String fechaGanado = getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE)
+        String fechaGanado = obtenerPrefsJuegos()
                 .getString(KEY_FECHA_GANADO, "");
         return obtenerFechaActualStr().equals(fechaGanado);
     }
@@ -208,7 +235,7 @@ public class PantallaJuegos extends BaseActivity {
 
         listoConfirmado = true;
         // Guardar que ya se confirmó hoy
-        getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+        obtenerPrefsJuegos().edit()
                 .putString(KEY_LISTO_CONFIRMADO, obtenerFechaActualStr())
                 .apply();
 
@@ -216,6 +243,14 @@ public class PantallaJuegos extends BaseActivity {
         btnAccionJuegos.setEnabled(false);
         btnAccionJuegos.setClickable(false);
         btnAccionJuegos.setAlpha(0.5f);
+
+        if (tvContadorListo != null) {
+            tvContadorListo.setText("Ya hiciste la misión del día");
+            tvContadorListo.setTextColor(ContextCompat.getColor(this, R.color.color_mision_completada));
+            tvContadorListo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        }
+
+        cancelarAlarmaMedianoche();
         enviarMensajeAlGuardian("TODO BIEN 👌🏻", "listo_confirmado");
 
         verificarYMostrarNotificacion();
@@ -267,7 +302,7 @@ public class PantallaJuegos extends BaseActivity {
         detenerContadorListo();
 
         // Recuperar estado del día actual
-        String fechaConfirmado = getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE)
+        String fechaConfirmado = obtenerPrefsJuegos()
                 .getString(KEY_LISTO_CONFIRMADO, "");
         listoConfirmado = obtenerFechaActualStr().equals(fechaConfirmado);
 
@@ -296,21 +331,28 @@ public class PantallaJuegos extends BaseActivity {
         contadorListo = new CountDownTimer(diff, INTERVALO_CONTADOR_MS) {
             @Override
             public void onTick(long millisUntilFinished) {
-                long totalSegundos = millisUntilFinished / 1000;
-                long horas = totalSegundos / 3600;
-                long minutos = (totalSegundos % 3600) / 60;
-                long segundos = totalSegundos % 60;
-
                 if (tvContadorListo != null) {
-                    tvContadorListo.setText(String.format(Locale.getDefault(),
-                            "%02d:%02d:%02d", horas, minutos, segundos));
-
-                    if (horas >= 10) {
-                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#00E676"));
-                    } else if (horas >= 5) {
-                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                    if (listoConfirmado) {
+                        tvContadorListo.setText("Ya hiciste la misión del día");
+                        tvContadorListo.setTextColor(ContextCompat.getColor(PantallaJuegos.this, R.color.color_mision_completada));
+                        tvContadorListo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
                     } else {
-                        tvContadorListo.setTextColor(android.graphics.Color.parseColor("#F44336"));
+                        long totalSegundos = millisUntilFinished / 1000;
+                        long horas = totalSegundos / 3600;
+                        long minutos = (totalSegundos % 3600) / 60;
+                        long segundos = totalSegundos % 60;
+
+                        tvContadorListo.setText(String.format(Locale.getDefault(),
+                                "%02d:%02d:%02d", horas, minutos, segundos));
+                        tvContadorListo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
+
+                        if (horas >= 10) {
+                            tvContadorListo.setTextColor(android.graphics.Color.parseColor("#00E676"));
+                        } else if (horas >= 5) {
+                            tvContadorListo.setTextColor(android.graphics.Color.parseColor("#FF9800"));
+                        } else {
+                            tvContadorListo.setTextColor(android.graphics.Color.parseColor("#F44336"));
+                        }
                     }
                 }
             }
@@ -331,7 +373,7 @@ public class PantallaJuegos extends BaseActivity {
                 }
 
                 // Limpiar variables para el nuevo día
-                getSharedPreferences(PREFS_JUEGO, MODE_PRIVATE).edit()
+                obtenerPrefsJuegos().edit()
                         .remove(KEY_FECHA_GANADO)
                         .remove(KEY_LISTO_CONFIRMADO)
                         .apply();
@@ -350,6 +392,43 @@ public class PantallaJuegos extends BaseActivity {
         };
 
         contadorListo.start();
+
+        // Programar la alarma física por si cierran la app
+        if (!listoConfirmado) {
+            programarAlarmaMedianoche(diff);
+        }
+    }
+
+    private void programarAlarmaMedianoche(long diffMs) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        long triggerTime = System.currentTimeMillis() + diffMs;
+
+        if (alarmManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+            }
+        }
+    }
+
+    private void cancelarAlarmaMedianoche() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                this, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
     private void detenerContadorListo() {
@@ -430,20 +509,33 @@ public class PantallaJuegos extends BaseActivity {
     private void prepararPerfilExplorador() {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(this, "Inicia sesion para publicar ubicacion", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Inicia sesión para continuar", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(PantallaJuegos.this, pantalla_login.class));
+            finish();
             return;
         }
 
+        accesoJuegosPermitido = false;
         exploradorUid = user.getUid();
         firestore.collection("usuarios")
                 .document(exploradorUid)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot == null || !documentSnapshot.exists()) {
+                        android.util.Log.e("PantallaJuegos", "El documento del usuario no existe");
+                        Toast.makeText(this, "Error: No se encontró el perfil", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(PantallaJuegos.this, pantalla_login.class));
+                        finish();
+                        return;
+                    }
+
                     String tipoUsuario = documentSnapshot.getString("tipoUsuario");
                     if (!TIPO_EXPLORADOR.equals(tipoUsuario)) {
                         exploradorUid = null;
                         Toast.makeText(this,
                                 "Esta cuenta no es Explorador", Toast.LENGTH_SHORT).show();
+                        startActivity(new Intent(PantallaJuegos.this, pantalla_login.class));
+                        finish();
                         return;
                     }
 
@@ -451,19 +543,34 @@ public class PantallaJuegos extends BaseActivity {
                     nombreExplorador = documentSnapshot.getString("nombreUsuario");
                     guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
 
+                    if (guardianVinculadoId == null || guardianVinculadoId.trim().isEmpty()) {
+                        android.util.Log.d("PantallaJuegos", "Redirigiendo a CompartirCodigo (sin vinculo)");
+                        Toast.makeText(PantallaJuegos.this, "Primero debes vincularte con un Guardián", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(PantallaJuegos.this, PantallaCompartirCodigo.class));
+                        finish();
+                        return;
+                    }
+
+                    accesoJuegosPermitido = true;
                     iniciarContadorListo();
 
-                    android.util.Log.d("PantallaJuegos", "Explorador: " + nombreExplorador +
-                            ", Guardian vinculado: " + guardianVinculadoId);
+                    android.util.Log.d("PantallaJuegos", "Perfil cargado: " + nombreExplorador +
+                            ", Guardian: " + guardianVinculadoId);
                 })
                 .addOnFailureListener(e -> {
                     android.util.Log.e("PantallaJuegos", "Error leyendo perfil", e);
+                    Toast.makeText(this, "No se pudo validar tu acceso", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(PantallaJuegos.this, pantalla_login.class));
+                    finish();
                 });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if (!accesoJuegosPermitido) {
+            return;
+        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             iniciarPublicacionUbicacion();

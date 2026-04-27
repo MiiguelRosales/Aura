@@ -35,6 +35,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -105,6 +106,14 @@ public class PantallaGuardian extends BaseActivity {
         firestore = FirebaseFirestore.getInstance();
         connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         registrarMonitoreoInternet();
+
+        // Registrar token FCM cada vez que se entra por seguridad
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+            if (auth.getCurrentUser() != null) {
+                firestore.collection("usuarios").document(auth.getCurrentUser().getUid())
+                        .update("fcmToken", token);
+            }
+        });
 
         // ── Historial de notificaciones (sin precargados) ────────────
         notificaciones = new ArrayList<>();

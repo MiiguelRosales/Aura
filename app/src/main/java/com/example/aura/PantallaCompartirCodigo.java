@@ -51,6 +51,7 @@ public class PantallaCompartirCodigo extends BaseActivity {
 
         final EditText etCodigoVincular = findViewById(R.id.etCodigoVincular);
         final MaterialButton btnCompartir = findViewById(R.id.btnAceptarVinculo);
+        final MaterialButton btnRegresar = findViewById(R.id.btnRegresar);
 
         etCodigoVincular.setText("Verificando usuario...");
         etCodigoVincular.setEnabled(false);
@@ -71,6 +72,12 @@ public class PantallaCompartirCodigo extends BaseActivity {
                 clipboard.setPrimaryClip(clipData);
             }
             Toast.makeText(this, "Código copiado y listo para compartir", Toast.LENGTH_SHORT).show();
+        });
+
+        btnRegresar.setOnClickListener(v -> {
+            startActivity(new Intent(PantallaCompartirCodigo.this, pantalla_login.class));
+            overridePendingTransition(0, 0);
+            finish();
         });
 
     }

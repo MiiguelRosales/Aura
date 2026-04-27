@@ -54,4 +54,5 @@
     <color name="login_dropdown_bg">#1B2C47</color>
     <color name="login_dropdown_field_bg">#121F33</color>
     <color name="login_dropdown_item_selected">#2A426B</color>
+    <color name="color_mision_completada">#69F0AE</color>
 </resources>

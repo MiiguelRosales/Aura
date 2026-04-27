@@ -52,7 +52,7 @@
 
         <TextView
             android:id="@+id/tvContadorListo"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:fontFamily="sans-serif-black"
@@ -60,6 +60,8 @@
             android:textColor="#00E676"
             android:textSize="44sp"
             android:textStyle="bold"
+            android:gravity="center"
+            android:textAlignment="center"
             android:letterSpacing="0.05"
             android:shadowColor="#80000000"
             android:shadowDx="2"

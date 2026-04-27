@@ -22,6 +22,11 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import android.view.ViewGroup;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -59,6 +64,16 @@ public class pantalla_inicio extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.pantalla_inicio);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityResultLauncher<String> pushPermissionLauncher = registerForActivityResult(
+                        new ActivityResultContracts.RequestPermission(),
+                        isGranted -> { /* Permiso manejado por el sistema */ }
+                );
+                pushPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -165,7 +180,11 @@ public class pantalla_inicio extends AppCompatActivity {
                                                 ? new Intent(pantalla_inicio.this, PantallaGuardian.class)
                                                 : new Intent(pantalla_inicio.this, PantallaVincular.class);
                                     } else {
-                                        intentDestino = new Intent(pantalla_inicio.this, PantallaJuegos.class);
+                                        String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                                        boolean tieneVinculo = guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty();
+                                        intentDestino = tieneVinculo
+                                                ? new Intent(pantalla_inicio.this, PantallaJuegos.class)
+                                                : new Intent(pantalla_inicio.this, PantallaCompartirCodigo.class);
                                     }
                                     startActivity(intentDestino);
                                     finish();

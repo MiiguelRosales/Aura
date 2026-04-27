@@ -26,6 +26,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestore;
 import androidx.appcompat.app.AlertDialog;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.regex.Pattern;
 
@@ -212,6 +213,11 @@ public class pantalla_login extends BaseActivity {
                                 SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
                                 prefs.edit().putString(KEY_TIPO_USUARIO, tipoReal).apply();
 
+                                // Obtener y guardar token FCM para notificaciones
+                                FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {
+                                    firestore.collection("usuarios").document(uid).update("fcmToken", token);
+                                });
+
                                 if (TIPO_GUARDIAN.equals(tipoReal)) {
                                     firestore.document("configuracion/registro_general")
                                             .set(new java.util.HashMap<String, Object>() {{
@@ -231,7 +237,13 @@ public class pantalla_login extends BaseActivity {
                                             ? new Intent(pantalla_login.this, PantallaGuardian.class)
                                             : new Intent(pantalla_login.this, PantallaVincular.class);
                                 } else {
-                                    intentDestino = new Intent(pantalla_login.this, PantallaJuegos.class);
+                                    String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                                    boolean tieneVinculo = guardianVinculadoId != null
+                                            && !guardianVinculadoId.trim().isEmpty();
+
+                                    intentDestino = tieneVinculo
+                                            ? new Intent(pantalla_login.this, PantallaJuegos.class)
+                                            : new Intent(pantalla_login.this, PantallaCompartirCodigo.class);
                                 }
 
                                 Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();

@@ -58,6 +58,8 @@ import java.util.Map;
 public class PantallaChat extends BaseActivity {
 
     private static final String PREFS_NAME = "AuraPrefs";
+    // TODO: PEGA AQUÍ TU CLAVE DE SERVIDOR DE FIREBASE CONSOLE
+    private static final String FCM_SERVER_KEY = "TU_CLAVE_AQUI";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
     private static final String TIPO_MENSAJE_TEXTO = "texto";
@@ -108,6 +110,7 @@ public class PantallaChat extends BaseActivity {
     private String exploradorId;
     private String chatId;
     private String estadoPresencia = "Sin conexión";
+    private String counterpartFcmToken;
     private boolean counterpartEscribiendo;
     private boolean localEscribiendo;
 
@@ -343,6 +346,7 @@ public class PantallaChat extends BaseActivity {
                     counterpartNombre = defaultString(snapshot.getString(KEY_NOMBRE_USUARIO), "Contacto");
                     counterpartFotoBase64 = snapshot.getString(KEY_FOTO_PERFIL_BASE64);
                     counterpartFotoUrl = snapshot.getString(KEY_FOTO_PERFIL_URL);
+                    counterpartFcmToken = snapshot.getString("fcmToken");
                     tvNombreContacto.setText(counterpartNombre);
                     actualizarEstadoContacto(snapshot);
                     cargarAvatarContacto();
@@ -612,9 +616,51 @@ public class PantallaChat extends BaseActivity {
                 .set(mensaje)
                 .addOnSuccessListener(unused -> {
                     listViewChat.post(() -> listViewChat.setSelection(adapter.getCount() - 1));
+                    enviarNotificacionPush(currentNombre != null ? currentNombre : "Aura", contenido);
                 })
                 .addOnFailureListener(e -> Toast.makeText(this,
                         "No se pudo enviar el mensaje", Toast.LENGTH_SHORT).show());
+    }
+
+    private void enviarNotificacionPush(String titulo, String cuerpo) {
+        if (TextUtils.isEmpty(counterpartFcmToken) || "TU_CLAVE_AQUI".equals(FCM_SERVER_KEY)) {
+            android.util.Log.w("FCM", "No se puede enviar notificación: Token o Key faltante");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("https://fcm.googleapis.com/fcm/send");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Authorization", "key=" + FCM_SERVER_KEY);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+
+                org.json.JSONObject notification = new org.json.JSONObject();
+                notification.put("title", titulo);
+                notification.put("body", cuerpo);
+                notification.put("sound", "default");
+
+                org.json.JSONObject data = new org.json.JSONObject();
+                data.put("tipo", "chat");
+
+                org.json.JSONObject json = new org.json.JSONObject();
+                json.put("to", counterpartFcmToken);
+                json.put("notification", notification);
+                json.put("data", data);
+
+                java.io.OutputStream os = conn.getOutputStream();
+                os.write(json.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                android.util.Log.d("FCM", "Response Code: " + responseCode);
+
+            } catch (Exception e) {
+                android.util.Log.e("FCM", "Error enviando notificación", e);
+            }
+        }).start();
     }
 
     private void actualizarEstadoEscribiendo(boolean escribiendo) {

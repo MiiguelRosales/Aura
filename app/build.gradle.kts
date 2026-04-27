@@ -44,6 +44,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-messaging")
     implementation(libs.play.services.ads)
     implementation(libs.play.services.maps)
     implementation("com.google.android.gms:play-services-location:21.3.0")
