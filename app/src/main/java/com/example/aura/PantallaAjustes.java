@@ -84,6 +84,7 @@ public class PantallaAjustes extends BaseActivity {
                     .edit()
                     .putBoolean("guardarLogin", false)
                     .apply();
+            stopService(new Intent(PantallaAjustes.this, ChatNotificationForegroundService.class));
             auth.signOut();
             startActivity(new Intent(PantallaAjustes.this, pantalla_inicio.class));
             finishAffinity(); // Limpia el historial para que no pueda volver atrás

@@ -107,11 +107,34 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:alpha="0.4">
-                <TextView
+                <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="💬"
-                    android:textSize="14sp" />
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💬"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvChatBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|top"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="-4dp"
+                        android:background="@drawable/bg_chat_badge"
+                        android:gravity="center"
+                        android:minWidth="18dp"
+                        android:minHeight="18dp"
+                        android:paddingLeft="4dp"
+                        android:paddingTop="0dp"
+                        android:paddingRight="4dp"
+                        android:paddingBottom="0dp"
+                        android:textColor="@android:color/white"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </FrameLayout>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

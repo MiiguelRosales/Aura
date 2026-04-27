@@ -502,6 +502,11 @@ public class PantallaChat extends BaseActivity {
                     tvChatVacio.setVisibility(mensajes.isEmpty() ? View.VISIBLE : View.GONE);
                     if (!mensajes.isEmpty()) {
                         listViewChat.post(() -> listViewChat.setSelection(adapter.getCount() - 1));
+                        MensajeChat ultimoMensaje = mensajes.get(mensajes.size() - 1);
+                        if (ultimoMensaje.timestamp != null && chatId != null) {
+                            marcarChatComoLeido(chatId, ultimoMensaje.timestamp.toDate().getTime());
+                            cancelarNotificacionChat(chatId);
+                        }
                     }
                 });
     }
@@ -804,6 +809,9 @@ public class PantallaChat extends BaseActivity {
     protected void onResume() {
         super.onResume();
         actualizarPresencia(true);
+        if (!TextUtils.isEmpty(chatId)) {
+            cancelarNotificacionChat(chatId);
+        }
     }
 
     @Override
