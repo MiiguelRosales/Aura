@@ -311,17 +311,19 @@ public class pantalla_registro extends BaseActivity {
             }
         }
 
+        final String mensajeError = mensajeBase + detalle;
+
         FirebaseUser usuarioActual = auth.getCurrentUser();
         if (usuarioCreado != null && usuarioActual != null && usuarioCreado.getUid().equals(usuarioActual.getUid())) {
             usuarioCreado.delete().addOnCompleteListener(task -> {
                 auth.signOut();
-                showMessage(mensajeBase + detalle);
+                showMessage(mensajeError);
             });
             return;
         }
 
         auth.signOut();
-        showMessage(mensajeBase + detalle);
+        showMessage(mensajeError);
     }
 
     private void configurarAutoAvanceFecha(EditText etDia, EditText etMes, EditText etAnio) {
