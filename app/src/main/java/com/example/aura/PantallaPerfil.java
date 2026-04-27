@@ -39,7 +39,7 @@ import java.util.Map;
 
 public class PantallaPerfil extends BaseActivity {
     private static final int MAX_PROFILE_IMAGE_BYTES = 350 * 1024;
-    private static final java.util.regex.Pattern PATRON_USUARIO = java.util.regex.Pattern.compile("^[A-Za-z]{1,12}$");
+    private static final java.util.regex.Pattern PATRON_USUARIO = java.util.regex.Pattern.compile("^[A-Za-z]{1,15}$");
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;

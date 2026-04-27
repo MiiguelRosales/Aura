@@ -7,8 +7,7 @@ service cloud.firestore {
 
     function esNombreUsuarioValido(nombre) {
       return nombre is string
-        && nombre.matches('^[A-Za-z]{1,12}$')
-        && nombre.matches('^.*[A-Z].*$');
+        && nombre.matches('^[A-Za-z]{1,15}$');
     }
 
     function esCelularValido(celular) {

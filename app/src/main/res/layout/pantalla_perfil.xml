@@ -227,6 +227,7 @@
                         android:inputType="textPersonName"
                         android:minHeight="0dp"
                         android:padding="0dp"
+                        android:maxLength="15"
                         tools:text="Cargando..."
                         android:textColor="@color/aura_text_primary"
                         android:textCursorDrawable="@drawable/cursor_rojo"

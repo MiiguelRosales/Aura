@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -39,7 +40,7 @@ public class pantalla_registro extends BaseActivity {
     private static final String KEY_TIPO_USUARIO = "tipoUsuario";
     private static final String TIPO_GUARDIAN = "GUARDIAN";
     private static final String TIPO_EXPLORADOR = "EXPLORADOR";
-    private static final Pattern PATRON_USUARIO = Pattern.compile("^[A-Za-z]{1,12}$");
+    private static final Pattern PATRON_USUARIO = Pattern.compile("^[A-Za-z]{1,15}$");
     private static final Pattern PATRON_TELEFONO = Pattern.compile("^[0-9]{10}$");
     private static final Pattern PATRON_PASSWORD = Pattern.compile("^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{8,12}$");
     private static final Pattern PATRON_LOCAL_CORREO = Pattern.compile("^[A-Za-z0-9._%+-]{1,25}$");
@@ -140,7 +141,7 @@ public class pantalla_registro extends BaseActivity {
                 return;
             }
             if (!PATRON_USUARIO.matcher(nombre).matches()) {
-                Toast.makeText(this, "Nombre de usuario: solo letras (máx 12)", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Nombre de usuario: solo letras (máx 15)", Toast.LENGTH_LONG).show();
                 return;
             }
 
@@ -224,13 +225,14 @@ public class pantalla_registro extends BaseActivity {
                                           MaterialButton btnRegistrar) {
         auth.createUserWithEmailAndPassword(correo, contrasena)
                 .addOnSuccessListener(authResult -> {
-                    if (authResult.getUser() == null) {
+                    FirebaseUser usuarioCreado = authResult.getUser();
+                    if (usuarioCreado == null) {
                         btnRegistrar.setEnabled(true);
                         Toast.makeText(this, "No se pudo obtener usuario", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    String uid = authResult.getUser().getUid();
+                    String uid = usuarioCreado.getUid();
                     Map<String, Object> perfil = new HashMap<>();
                     perfil.put("uid", uid);
                     perfil.put("nombreUsuario", nombre);
@@ -244,40 +246,22 @@ public class pantalla_registro extends BaseActivity {
                             .document(uid)
                             .set(perfil)
                             .addOnSuccessListener(unused -> {
-                            if (TIPO_GUARDIAN.equals(tipoUsuario)) {
-                                Map<String, Object> configuracion = new HashMap<>();
-                                configuracion.put("guardianRegistrado", true);
-                                configuracion.put("guardianUid", uid);
-                                configuracion.put("actualizadoEn", FieldValue.serverTimestamp());
+                                if (TIPO_GUARDIAN.equals(tipoUsuario)) {
+                                    Map<String, Object> configuracion = new HashMap<>();
+                                    configuracion.put("guardianRegistrado", true);
+                                    configuracion.put("guardianUid", uid);
+                                    configuracion.put("actualizadoEn", FieldValue.serverTimestamp());
 
-                                firestore.document("configuracion/registro_general")
-                                    .set(configuracion);
-                            }
-
-                                getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                                        .edit()
-                                        .putString(KEY_TIPO_USUARIO, tipoUsuario)
-                                        .apply();
-
-                                if (authResult.getUser() != null) {
-                                    authResult.getUser().sendEmailVerification();
+                                    firestore.document("configuracion/registro_general")
+                                            .set(configuracion)
+                                            .addOnSuccessListener(unusedConfig -> finalizarRegistroExitoso(usuarioCreado, tipoUsuario, btnRegistrar))
+                                            .addOnFailureListener(e -> revertirRegistroAutenticacion(usuarioCreado, btnRegistrar, "No se pudo guardar la configuración del guardián: ", e));
+                                } else {
+                                    finalizarRegistroExitoso(usuarioCreado, tipoUsuario, btnRegistrar);
                                 }
-
-                                Toast.makeText(this, "Registro exitoso. Revisa tu correo para verificar tu cuenta.", Toast.LENGTH_LONG).show();
-
-                                Intent intent = new Intent(this, pantalla_login.class);
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                                startActivity(intent);
-                                finish();
                             })
                             .addOnFailureListener(e -> {
-                                btnRegistrar.setEnabled(true);
-                                String detalle = e.getMessage();
-                                if (e instanceof FirebaseFirestoreException) {
-                                    FirebaseFirestoreException firestoreException = (FirebaseFirestoreException) e;
-                                    detalle = "[" + firestoreException.getCode() + "] " + detalle;
-                                }
-                                showMessage("No se pudo guardar perfil: " + detalle);
+                                revertirRegistroAutenticacion(usuarioCreado, btnRegistrar, "No se pudo guardar perfil: ", e);
                             });
                 })
                 .addOnFailureListener(e -> {
@@ -289,6 +273,55 @@ public class pantalla_registro extends BaseActivity {
                     }
                     showMessage("Error al registrar: " + detalle);
                 });
+    }
+
+    private void finalizarRegistroExitoso(FirebaseUser usuarioCreado,
+                                          String tipoUsuario,
+                                          MaterialButton btnRegistrar) {
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_TIPO_USUARIO, tipoUsuario)
+                .apply();
+
+        if (usuarioCreado != null) {
+            usuarioCreado.sendEmailVerification();
+        }
+
+        btnRegistrar.setEnabled(true);
+        Toast.makeText(this, "Registro exitoso. Revisa tu correo para verificar tu cuenta.", Toast.LENGTH_LONG).show();
+
+        Intent intent = new Intent(this, pantalla_login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void revertirRegistroAutenticacion(FirebaseUser usuarioCreado,
+                                               MaterialButton btnRegistrar,
+                                               String mensajeBase,
+                                               Exception e) {
+        btnRegistrar.setEnabled(true);
+
+        String detalle = e.getMessage();
+        if (e instanceof FirebaseFirestoreException) {
+            FirebaseFirestoreException firestoreException = (FirebaseFirestoreException) e;
+            detalle = "[" + firestoreException.getCode() + "] " + detalle;
+            if (firestoreException.getCode() == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+                detalle = detalle + " Verifica que el nombre de usuario, correo, celular y fecha cumplan las reglas de Firestore.";
+            }
+        }
+
+        FirebaseUser usuarioActual = auth.getCurrentUser();
+        if (usuarioCreado != null && usuarioActual != null && usuarioCreado.getUid().equals(usuarioActual.getUid())) {
+            usuarioCreado.delete().addOnCompleteListener(task -> {
+                auth.signOut();
+                showMessage(mensajeBase + detalle);
+            });
+            return;
+        }
+
+        auth.signOut();
+        showMessage(mensajeBase + detalle);
     }
 
     private void configurarAutoAvanceFecha(EditText etDia, EditText etMes, EditText etAnio) {
