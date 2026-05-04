@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- TÍTULO -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Eliminar cuenta"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/aura_text_primary"
+        android:fontFamily="sans-serif-condensed"
+        android:layout_marginBottom="16dp" />
+
+    <!-- RESUMEN DE DATOS -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/login_card_bg"
+        app:cardCornerRadius="12dp"
+        app:strokeColor="@color/login_card_stroke"
+        app:strokeWidth="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Usuario:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+
+                <TextView
+                    android:id="@+id/tvNombreUsuario"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:text="Usuario"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Correo:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+
+                <TextView
+                    android:id="@+id/tvCorreo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:text="correo@example.com"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.4"
+                    android:text="Contraseña:"
+                    android:textColor="@color/aura_text_hint"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+
+                <TextView
+                    android:id="@+id/tvContrasena"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.6"
+                    android:text="••••••••"
+                    android:textColor="@color/aura_text_primary"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-condensed" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- MOTIVO DE ELIMINACIÓN -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Motivo de eliminación:"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/aura_text_primary"
+        android:fontFamily="sans-serif-condensed"
+        android:layout_marginBottom="12dp" />
+
+    <!-- CHECKBOX 1: No uso la aplicación -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <CheckBox
+            android:id="@+id/cbNoUso"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="No uso la aplicación"
+            android:textColor="@color/aura_text_primary"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- CHECKBOX 2: No vinculé a mi guardian -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <CheckBox
+            android:id="@+id/cbNoVinculo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="No se vincula mi guardián"
+            android:textColor="@color/aura_text_primary"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- CHECKBOX 3: Otros -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <CheckBox
+            android:id="@+id/cbOtro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Otros"
+            android:textColor="@color/aura_text_primary"
+            android:textSize="13sp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- CAMPO DE TEXTO PARA "OTROS" -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilMotivoPrincipal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        android:hint="Por favor describe tu motivo..."
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="8dp"
+        app:boxCornerRadiusBottomStart="8dp"
+        app:boxCornerRadiusTopEnd="8dp"
+        app:boxCornerRadiusTopStart="8dp"
+        app:boxStrokeColor="@color/login_input_stroke"
+        app:boxStrokeWidth="1dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etMotivoPrincipal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:minLines="3"
+            android:gravity="top"
+            android:textColor="@color/aura_text_primary"
+            android:textCursorDrawable="@drawable/cursor_rojo" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- ADVERTENCIA DE CONSECUENCIAS -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:strokeColor="@android:color/holo_red_light"
+        app:strokeWidth="1dp"
+        app:cardCornerRadius="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Consecuencias:"
+                android:textColor="@android:color/holo_red_light"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-condensed"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="• Tu cuenta será eliminada en 3 días\n• Se borrarán todos tus chats\n• Se desvincularán los guardianes/exploradores\n• Deberás registrarte de nuevo para crear una nueva cuenta"
+                android:textColor="@color/aura_text_primary"
+                android:textSize="11sp"
+                android:fontFamily="sans-serif-condensed"
+                android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- BOTONES DE ACCIÓN -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:spacing="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelarEliminar"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:text="Cancelar"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-condensed"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:strokeColor="@color/login_btn_stroke" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnEnviarSolicitud"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:text="Enviar solicitud"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif-condensed"
+            android:layout_marginStart="8dp"
+            app:backgroundTint="@android:color/holo_red_light" />
+    </LinearLayout>
+</LinearLayout>

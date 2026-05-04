@@ -117,5 +117,11 @@ service cloud.firestore {
       allow create: if request.auth != null;
       allow read, update, delete: if false;
     }
+
+    match /solicitudes_eliminacion_cuenta/{usuarioId} {
+      allow create, update: if request.auth != null && request.auth.uid == usuarioId;
+      allow read: if request.auth != null && request.auth.uid == usuarioId;
+      allow delete: if false;
+    }
   }
 }

@@ -146,6 +146,10 @@ public class PantallaAjustes extends BaseActivity {
         // --- BOTÓN SOPORTE TÉCNICO ---
         Button btnSoporte = findViewById(R.id.btnSoporte);
         btnSoporte.setOnClickListener(v -> mostrarDialogoSoporte());
+
+        // --- BOTÓN ELIMINAR CUENTA ---
+        Button btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
+        btnEliminarCuenta.setOnClickListener(v -> mostrarDialogoEliminarCuenta());
     }
 
     private void obtenerDatosUsuario() {
@@ -240,4 +244,161 @@ public class PantallaAjustes extends BaseActivity {
             ObjectAnimator.ofFloat(thumb, "translationX", 0f).setDuration(300).start();
         }
     }
-}
+    private void mostrarDialogoEliminarCuenta() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
+
+        firestore.collection("usuarios").document(user.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String nombreUsuario = documentSnapshot.getString("nombreUsuario");
+                        String correo = user.getEmail();
+                        String tipoUsuario = documentSnapshot.getString("tipoUsuario");
+
+                        android.view.LayoutInflater inflater = android.view.LayoutInflater.from(PantallaAjustes.this);
+                        android.view.View dialogView = inflater.inflate(R.layout.dialog_eliminar_cuenta, null);
+
+                        TextView tvNombreUsuario = dialogView.findViewById(R.id.tvNombreUsuario);
+                        TextView tvCorreo = dialogView.findViewById(R.id.tvCorreo);
+                        TextView tvContrasena = dialogView.findViewById(R.id.tvContrasena);
+
+                        android.widget.CheckBox cbNoUso = dialogView.findViewById(R.id.cbNoUso);
+                        android.widget.CheckBox cbNoVinculo = dialogView.findViewById(R.id.cbNoVinculo);
+                        android.widget.CheckBox cbOtro = dialogView.findViewById(R.id.cbOtro);
+                        com.google.android.material.textfield.TextInputLayout tilMotivoPrincipal = dialogView.findViewById(R.id.tilMotivoPrincipal);
+                        com.google.android.material.textfield.TextInputEditText etMotivoPrincipal = dialogView.findViewById(R.id.etMotivoPrincipal);
+
+                        android.widget.Button btnCancelar = dialogView.findViewById(R.id.btnCancelarEliminar);
+                        android.widget.Button btnEnviar = dialogView.findViewById(R.id.btnEnviarSolicitud);
+
+                        tvNombreUsuario.setText(nombreUsuario != null ? nombreUsuario : "Usuario");
+                        tvCorreo.setText(correo != null ? correo : "");
+                        tvContrasena.setText("••••••••");
+
+                        com.google.android.material.dialog.MaterialAlertDialogBuilder builder =
+                                new com.google.android.material.dialog.MaterialAlertDialogBuilder(PantallaAjustes.this);
+                        builder.setView(dialogView);
+
+                        androidx.appcompat.app.AlertDialog dialog = builder.create();
+
+                        cbOtro.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            tilMotivoPrincipal.setVisibility(isChecked ? android.view.View.VISIBLE : android.view.View.GONE);
+                            if (!isChecked) {
+                                etMotivoPrincipal.setText("");
+                            }
+                        });
+
+                        btnCancelar.setOnClickListener(v -> dialog.dismiss());
+
+                        btnEnviar.setOnClickListener(v -> {
+                            boolean noUso = cbNoUso.isChecked();
+                            boolean noVinculo = cbNoVinculo.isChecked();
+                            boolean otro = cbOtro.isChecked();
+
+                            if (!noUso && !noVinculo && !otro) {
+                                showMessage("Por favor selecciona un motivo");
+                                return;
+                            }
+
+                            if (otro && etMotivoPrincipal.getText().toString().trim().isEmpty()) {
+                                showMessage("Por favor describe tu motivo");
+                                return;
+                            }
+
+                            StringBuilder motivoBuilder = new StringBuilder();
+                            if (noUso) motivoBuilder.append("No uso la aplicación; ");
+                            if (noVinculo) motivoBuilder.append("No vinculé a mi guardián; ");
+                            if (otro) {
+                                motivoBuilder.append("Otros: ").append(etMotivoPrincipal.getText().toString());
+                            }
+
+                            String motivoFinal = motivoBuilder.toString();
+                            guardarSolicitudEliminacion(user.getUid(), nombreUsuario, correo, tipoUsuario, motivoFinal, dialog);
+                        });
+
+                        dialog.show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al obtener datos del usuario: " + e.getMessage());
+                });
+
+    }
+
+    private void guardarSolicitudEliminacion(String usuarioId, String nombreUsuario, String correo, String tipoUsuario, String motivo, androidx.appcompat.app.AlertDialog dialog) {
+                    String fecha = new SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault()).format(new Date());
+
+                    Map<String, Object> solicitud = new HashMap<>();
+                    solicitud.put("usuarioId", usuarioId);
+                    solicitud.put("nombreUsuario", nombreUsuario);
+                    solicitud.put("correo", correo);
+                    solicitud.put("tipoUsuario", tipoUsuario);
+                    solicitud.put("motivo", motivo);
+                    solicitud.put("fechaRegistro", fecha);
+                    solicitud.put("estado", "pendiente");
+
+                    firestore.collection("solicitudes_eliminacion_cuenta")
+                        .document(usuarioId)
+                        .set(solicitud, com.google.firebase.firestore.SetOptions.merge())
+                        .addOnSuccessListener(aVoid -> {
+                            dialog.dismiss();
+                            mostrarMensajeConfirmacion();
+                        })
+                        .addOnFailureListener(e -> {
+                            showMessage("Error al enviar la solicitud: " + e.getMessage());
+                        });
+                    }
+
+                    private void mostrarMensajeConfirmacion() {
+                    android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+                    container.setOrientation(android.widget.LinearLayout.VERTICAL);
+                    container.setPadding(24, 24, 24, 24);
+
+                    com.google.android.material.card.MaterialCardView card = new com.google.android.material.card.MaterialCardView(this);
+                    card.setCardBackgroundColor(getResources().getColor(R.color.login_card_bg));
+                    card.setCardElevation(8);
+                    card.setRadius(16);
+
+                    android.widget.LinearLayout content = new android.widget.LinearLayout(this);
+                    content.setOrientation(android.widget.LinearLayout.VERTICAL);
+                    content.setPadding(16, 16, 16, 16);
+
+                    android.widget.TextView tvTitulo = new android.widget.TextView(this);
+                    tvTitulo.setText("Solicitud Registrada");
+                    tvTitulo.setTextSize(18);
+                    tvTitulo.setTextColor(getResources().getColor(R.color.aura_text_primary));
+                    tvTitulo.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
+                    tvTitulo.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                    android.widget.TextView tvMensaje = new android.widget.TextView(this);
+                    tvMensaje.setText("Tu solicitud de eliminación ha sido recibida.\n\n" +
+                        "✓ Tu cuenta será eliminada en 10 días\n" +
+                        "✓ Se borrarán todos tus chats\n" +
+                        "✓ Se desvincularán tus guardianes/exploradores\n" +
+                        "✓ Para volver a usar Aura, deberás registrarte nuevamente\n\n" +
+                        "Si tienes preguntas, contáctanos en soporte técnico.");
+                    tvMensaje.setTextSize(13);
+                    tvMensaje.setTextColor(getResources().getColor(R.color.aura_text_primary));
+                    tvMensaje.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.NORMAL));
+                    tvMensaje.setLineSpacing(6f, 1.0f);
+                    android.widget.LinearLayout.LayoutParams msgParams = new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+                    msgParams.setMargins(0, 16, 0, 0);
+                    tvMensaje.setLayoutParams(msgParams);
+
+                    content.addView(tvTitulo);
+                    content.addView(tvMensaje);
+                    card.addView(content);
+                    container.addView(card);
+
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                        .setView(container)
+                        .setPositiveButton("Entendido", (dialog, which) -> dialog.dismiss())
+                        .setCancelable(false)
+                        .show();
+                    }
+    }

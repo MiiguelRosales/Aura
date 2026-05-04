@@ -216,6 +216,10 @@ public class PantallaPerfil extends BaseActivity {
     }
 
     private void cargarFotoPerfil(String fotoBase64, String fotoUrl) {
+        if (isFinishing() || isDestroyed() || ivFotoPerfil == null) {
+            return;
+        }
+
         if (!TextUtils.isEmpty(fotoBase64)) {
             byte[] data = decodificarBase64Seguro(fotoBase64);
             if (data != null && data.length > 0) {
