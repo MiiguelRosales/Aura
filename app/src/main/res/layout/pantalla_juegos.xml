@@ -224,9 +224,9 @@
         android:id="@+id/btnAccionJuegos"
         android:layout_width="wrap_content"
         android:layout_height="56dp"
-        android:layout_above="@id/cardBottomNav"
+        android:layout_below="@id/layoutTopJuegos"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="10dp"
         android:fontFamily="sans-serif-condensed"
         android:enabled="false"
         android:clickable="false"
@@ -246,12 +246,12 @@
         android:id="@+id/cardViewJuegos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/btnAccionJuegos"
-        android:layout_below="@id/layoutTopJuegos"
+        android:layout_above="@+id/layoutNavegacionPaginacion"
+        android:layout_below="@id/btnAccionJuegos"
         android:layout_centerHorizontal="true"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
         app:cardBackgroundColor="@color/login_card_bg"
         app:cardCornerRadius="28dp"
         app:cardElevation="6dp"
@@ -274,8 +274,8 @@
                     android:id="@+id/gridPagina1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:columnCount="2"
                     android:alignmentMode="alignMargins"
+                    android:columnCount="2"
                     android:columnOrderPreserved="false">
 
                 </GridLayout>
@@ -284,69 +284,13 @@
                     android:id="@+id/gridPagina2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:columnCount="2"
                     android:alignmentMode="alignMargins"
+                    android:columnCount="2"
                     android:columnOrderPreserved="false"
                     android:visibility="gone" />
 
             </LinearLayout>
 
-            <!-- Botones de paginación dentro del card, abajo de las cards -->
-            <LinearLayout
-                android:id="@+id/layoutNavegacionPaginacion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="8dp">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPaginaAnterior"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="8dp"
-                    android:minWidth="120dp"
-                    android:maxWidth="140dp"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:enabled="false"
-                    android:text="Anterior"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    app:icon="@drawable/flechaizquierda"
-                    app:iconTint="@color/white"
-                    app:iconGravity="textStart"
-                    app:iconPadding="10dp"
-                    app:backgroundTint="#8AB8F8"
-                    app:cornerRadius="28dp"
-                    app:strokeColor="@color/white"
-                    app:strokeWidth="1dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPaginaSiguiente"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="40dp"
-                    android:layout_marginStart="8dp"
-                    android:minWidth="120dp"
-                    android:maxWidth="140dp"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:text="Siguiente"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    app:icon="@drawable/flechaderecha"
-                    app:iconTint="@color/white"
-                    app:iconGravity="textEnd"
-                    app:iconPadding="10dp"
-                    app:backgroundTint="#8AB8F8"
-                    app:cornerRadius="28dp"
-                    app:strokeColor="@color/white"
-                    app:strokeWidth="1dp" />
-
-            </LinearLayout>
         </LinearLayout>
 
         <!-- SIMULADOR DE JUEGO (Oculto por defecto) -->
@@ -354,10 +298,10 @@
             android:id="@+id/layoutSimuladorJuego"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
             android:gravity="center"
-            android:visibility="gone"
-            android:padding="20dp">
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:visibility="gone">
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -367,27 +311,27 @@
                     android:id="@+id/layoutJuegoTresEnRaya"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/textoTurno"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Turno de X"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/aura_text_primary"
+                        android:layout_marginBottom="16dp"
                         android:fontFamily="sans-serif-condensed"
-                        android:layout_marginBottom="16dp"/>
+                        android:text="Turno de X"
+                        android:textColor="@color/aura_text_primary"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
 
                     <GridLayout
                         android:id="@+id/tableroGrid"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:alignmentMode="alignMargins"
                         android:columnCount="3"
                         android:rowCount="3"
-                        android:alignmentMode="alignMargins"
                         android:useDefaultMargins="true">
 
                         <Button
@@ -396,12 +340,14 @@
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn01"
                             android:layout_width="80dp"
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn02"
                             android:layout_width="80dp"
@@ -415,12 +361,14 @@
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn11"
                             android:layout_width="80dp"
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn12"
                             android:layout_width="80dp"
@@ -434,12 +382,14 @@
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn21"
                             android:layout_width="80dp"
                             android:layout_height="80dp"
                             android:textSize="32sp"
                             android:textStyle="bold" />
+
                         <Button
                             android:id="@+id/btn22"
                             android:layout_width="80dp"
@@ -453,119 +403,119 @@
                     android:id="@+id/layoutJuegoPPT"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:visibility="gone">
 
                     <TextView
                         android:id="@+id/textoPPT"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Elige piedra, papel o tijera"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/aura_text_primary"
+                        android:layout_marginBottom="16dp"
                         android:fontFamily="sans-serif-condensed"
-                        android:layout_marginBottom="16dp" />
+                        android:text="Elige piedra, papel o tijera"
+                        android:textColor="@color/aura_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center"
+                        android:orientation="horizontal"
                         android:padding="8dp">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPiedra"
                             android:layout_width="0dp"
                             android:layout_height="56dp"
+                            android:layout_marginEnd="4dp"
                             android:layout_weight="1"
                             android:text="Piedra"
                             android:textSize="14sp"
-                            app:cornerRadius="12dp"
                             app:backgroundTint="#607D8B"
-                            android:layout_marginEnd="4dp" />
+                            app:cornerRadius="12dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPapel"
                             android:layout_width="0dp"
                             android:layout_height="56dp"
+                            android:layout_marginHorizontal="4dp"
                             android:layout_weight="1"
                             android:text="Papel"
                             android:textSize="14sp"
-                            app:cornerRadius="12dp"
                             app:backgroundTint="#3F51B5"
-                            android:layout_marginHorizontal="4dp" />
+                            app:cornerRadius="12dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnTijera"
                             android:layout_width="0dp"
                             android:layout_height="56dp"
+                            android:layout_marginStart="4dp"
                             android:layout_weight="1"
                             android:text="Tijera"
                             android:textSize="14sp"
-                            app:cornerRadius="12dp"
                             app:backgroundTint="#E91E63"
-                            android:layout_marginStart="4dp" />
+                            app:cornerRadius="12dp" />
                     </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvEleccionPPT"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
                         android:text="IA aún no ha jugado"
-                        android:textSize="16sp"
                         android:textColor="@color/aura_text_hint"
-                        android:layout_marginTop="16dp" />
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/tvResultadoPPT"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text=""
-                        android:textSize="18sp"
-                        android:textStyle="bold"
                         android:textColor="@color/aura_text_primary"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/layoutJuegoNumero"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center"
-                    android:visibility="gone"
-                    android:padding="16dp">
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:id="@+id/textoNumero"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Adivina el número"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/aura_text_primary"
+                        android:layout_marginBottom="12dp"
                         android:fontFamily="sans-serif-condensed"
-                        android:layout_marginBottom="12dp" />
+                        android:text="Adivina el número"
+                        android:textColor="@color/aura_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvNivelNumero"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="Nivel 1: 1 - 10"
-                        android:textSize="16sp"
                         android:textColor="@color/aura_text_hint"
-                        android:layout_marginBottom="12dp" />
+                        android:textSize="16sp" />
 
                     <EditText
                         android:id="@+id/edtNumero"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
-                        android:inputType="number"
-                        android:hint="Ingresa un número"
-                        android:padding="12dp"
                         android:backgroundTint="@color/login_dropdown_field_bg"
+                        android:hint="Ingresa un número"
+                        android:inputType="number"
+                        android:padding="12dp"
                         android:textColor="@color/aura_text_primary"
                         android:textColorHint="@color/aura_text_hint" />
 
@@ -573,9 +523,9 @@
                         android:id="@+id/btnAdivinar"
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
+                        android:layout_marginTop="12dp"
                         android:text="Adivinar"
                         android:textSize="16sp"
-                        android:layout_marginTop="12dp"
                         app:backgroundTint="#2196F3"
                         app:cornerRadius="12dp" />
 
@@ -583,20 +533,20 @@
                         android:id="@+id/tvPistaNumero"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text=""
-                        android:textSize="16sp"
                         android:textColor="@color/aura_text_hint"
-                        android:layout_marginTop="12dp" />
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/tvResultadoNumero"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text=""
-                        android:textSize="18sp"
-                        android:textStyle="bold"
                         android:textColor="@color/aura_text_primary"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
             </FrameLayout>
@@ -605,9 +555,9 @@
                 android:id="@+id/btnSimularGanar"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:layout_marginTop="24dp"
                 android:text="Reiniciar juego"
                 android:textSize="16sp"
-                android:layout_marginTop="24dp"
                 app:backgroundTint="#00E676"
                 app:cornerRadius="12dp" />
 
@@ -615,16 +565,75 @@
                 android:id="@+id/btnSimularSalir"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
+                android:layout_marginTop="12dp"
                 android:text="Volver a juegos"
                 android:textSize="16sp"
-                android:layout_marginTop="12dp"
                 app:backgroundTint="#F44336"
                 app:cornerRadius="12dp" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-</RelativeLayout>
+        <!-- Botones de paginación fijos bajo la tarjeta principal (siempre en la misma posición) -->
+        <LinearLayout
+            android:id="@+id/layoutNavegacionPaginacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_above="@id/cardBottomNav"
+            android:layout_marginBottom="50dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginEnd="28dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPaginaAnterior"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:minWidth="120dp"
+                android:maxWidth="140dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:enabled="false"
+                android:text="Anterior"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:icon="@drawable/flechaizquierda"
+                app:iconTint="@color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:backgroundTint="#8AB8F8"
+                app:cornerRadius="28dp"
+                app:strokeColor="@color/white"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPaginaSiguiente"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:layout_marginStart="25dp"
+                android:minWidth="120dp"
+                android:maxWidth="140dp"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="Siguiente"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                app:icon="@drawable/flechaderecha"
+                app:iconTint="@color/white"
+                app:iconGravity="textEnd"
+                app:iconPadding="10dp"
+                app:backgroundTint="#8AB8F8"
+                app:cornerRadius="28dp"
+                app:strokeColor="@color/white"
+                app:strokeWidth="1dp" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 
 

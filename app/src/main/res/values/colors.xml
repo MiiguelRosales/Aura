@@ -56,6 +56,8 @@
     <color name="login_btn_stroke">#2057B3</color>
     <color name="login_btn_text">#FFFFFFFF</color>
     <color name="login_dropdown_bg">#EAF4FF</color>
+    <color name="grayscale_game_bg">#DADADA</color>
+    <color name="grayscale_icon_tint">#7A7A7A</color>
     <color name="login_dropdown_field_bg">#DCEEFF</color>
     <color name="login_dropdown_item_selected">#C9E2FF</color>
     <color name="color_mision_completada">#00E676</color>

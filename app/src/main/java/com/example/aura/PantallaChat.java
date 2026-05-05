@@ -216,10 +216,8 @@ public class PantallaChat extends BaseActivity {
 
         LinearLayout navPrincipal = findViewById(R.id.navPaginaPrincipalChat);
         navPrincipal.setOnClickListener(v -> {
-            Intent intent = TIPO_EXPLORADOR.equals(tipoUsuario)
-                    ? new Intent(PantallaChat.this, PantallaJuegos.class)
-                    : new Intent(PantallaChat.this, PantallaGuardian.class);
-            startActivity(intent);
+            startActivity(new Intent(PantallaChat.this,
+                    TIPO_EXPLORADOR.equals(tipoUsuario) ? PantallaJuegos.class : PantallaGuardian.class));
             overridePendingTransition(0, 0);
             finish();
         });

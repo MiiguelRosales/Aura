@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.res.ColorStateList;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -103,7 +104,10 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
     private GridLayout gridPagina1;
     private GridLayout gridPagina2;
     private LinearLayout layoutNavegacionPaginacion;
+    private int paginaActual = 1; // mantiene la página visible entre re-renderizados
     private boolean hayPaginaDos = false;
+    private List<GridLayout> paginasGrilla = new ArrayList<>();
+    private int totalPaginas = 1;
     private Button[][] tableroBotones = new Button[3][3];
     private TextView textoTurnoJuego;
     private TextView textoPPT;
@@ -130,11 +134,8 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
     private static final String KEY_LISTO_CONFIRMADO = "listo_confirmado_hoy";
     private static final String KEY_JUEGOS_SELECCIONADOS = "juegos_seleccionados";
 
-    private final List<JuegoDisponible> juegosDisponibles = Arrays.asList(
-            new JuegoDisponible("tres_en_raya", "Tres en raya", R.drawable.tresenraya, 1),
-            new JuegoDisponible("piedra_papel_tijera", "Piedra, papel o tijera", R.drawable.piedrapapelotijera, 2),
-            new JuegoDisponible("adivina_numero", "Adivina el numero", R.drawable.encuentranumero, 3)
-    );
+        private List<JuegoDisponible> juegosDisponibles;
+        private static final boolean SIMULAR_MUCHOS_JUEGOS = true; // activa simulación masiva para pruebas
 
     private static final class JuegoDisponible {
         final String id;
@@ -178,6 +179,19 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         configurarCallbackUbicacion();
 
         createNotificationChannel();
+
+        // Inicializar lista de juegos (posibilidad de simular muchos juegos para probar paginación)
+        juegosDisponibles = new ArrayList<>();
+        juegosDisponibles.add(new JuegoDisponible("tres_en_raya", "Tres en raya", R.drawable.tresenraya, 1));
+        juegosDisponibles.add(new JuegoDisponible("piedra_papel_tijera", "Piedra, papel o tijera", R.drawable.piedrapapelotijera, 2));
+        juegosDisponibles.add(new JuegoDisponible("adivina_numero", "Adivina el numero", R.drawable.encuentranumero, 3));
+
+        if (SIMULAR_MUCHOS_JUEGOS) {
+            // Generar juegos simulados adicionales para llenar varias páginas
+            for (int i = 4; i <= 20; i++) {
+                juegosDisponibles.add(new JuegoDisponible("simulacion_" + i, "Juego sim " + i, R.drawable.mesa, 0));
+            }
+        }
 
         requestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
@@ -264,8 +278,8 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         btnTijera.setOnClickListener(v -> jugarPPT("Tijera"));
         btnAdivinar.setOnClickListener(v -> jugarAdivinaNumero());
 
-        btnPaginaAnterior.setOnClickListener(v -> mostrarPagina(1));
-        btnPaginaSiguiente.setOnClickListener(v -> mostrarPagina(2));
+        btnPaginaAnterior.setOnClickListener(v -> mostrarPagina(paginaActual - 1));
+        btnPaginaSiguiente.setOnClickListener(v -> mostrarPagina(paginaActual + 1));
 
         btnSimularGanar.setOnClickListener(v -> {
             if (juegoSeleccionado == 2) {
@@ -281,42 +295,47 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
             scrollViewJuegos.setVisibility(View.VISIBLE);
             layoutSimuladorJuego.setVisibility(View.GONE);
             juegoSeleccionado = 0;
+            if (layoutNavegacionPaginacion != null) {
+                layoutNavegacionPaginacion.setVisibility(View.VISIBLE);
+            }
         });
 
-        mostrarPagina(1);
+        mostrarPagina(paginaActual);
     }
 
     private void mostrarPagina(int pagina) {
-        if (!hayPaginaDos) {
-            gridPagina1.setVisibility(View.VISIBLE);
-            if (gridPagina2 != null) {
-                gridPagina2.setVisibility(View.GONE);
+        // Mostrar la página solicitada dentro del rango 1..totalPaginas
+        if (paginasGrilla == null || paginasGrilla.isEmpty()) {
+            // sin páginas; asegurar botones deshabilitados
+            if (btnPaginaAnterior != null) {
+                btnPaginaAnterior.setEnabled(false);
+                btnPaginaAnterior.setAlpha(0.35f);
             }
-            btnPaginaAnterior.setEnabled(false);
-            btnPaginaAnterior.setAlpha(0.35f);
-            btnPaginaSiguiente.setEnabled(false);
-            btnPaginaSiguiente.setAlpha(0.35f);
+            if (btnPaginaSiguiente != null) {
+                btnPaginaSiguiente.setEnabled(false);
+                btnPaginaSiguiente.setAlpha(0.35f);
+            }
             return;
         }
 
-        if (pagina == 1) {
-            gridPagina1.setVisibility(View.VISIBLE);
-            if (gridPagina2 != null) {
-                gridPagina2.setVisibility(View.GONE);
-            }
-            btnPaginaAnterior.setEnabled(false);
-            btnPaginaAnterior.setAlpha(0.35f);
-            btnPaginaSiguiente.setEnabled(true);
-            btnPaginaSiguiente.setAlpha(1f);
-        } else {
-            gridPagina1.setVisibility(View.GONE);
-            if (gridPagina2 != null) {
-                gridPagina2.setVisibility(View.VISIBLE);
-            }
-            btnPaginaAnterior.setEnabled(true);
-            btnPaginaAnterior.setAlpha(1f);
-            btnPaginaSiguiente.setEnabled(false);
-            btnPaginaSiguiente.setAlpha(0.35f);
+        if (pagina < 1) pagina = 1;
+        if (pagina > totalPaginas) pagina = totalPaginas;
+        paginaActual = pagina;
+
+        for (int i = 0; i < paginasGrilla.size(); i++) {
+            GridLayout g = paginasGrilla.get(i);
+            g.setVisibility((i == paginaActual - 1) ? View.VISIBLE : View.GONE);
+        }
+
+        if (btnPaginaAnterior != null) {
+            boolean habilitarAnt = paginaActual > 1;
+            btnPaginaAnterior.setEnabled(habilitarAnt);
+            btnPaginaAnterior.setAlpha(habilitarAnt ? 1f : 0.35f);
+        }
+        if (btnPaginaSiguiente != null) {
+            boolean habilitarSig = paginaActual < totalPaginas;
+            btnPaginaSiguiente.setEnabled(habilitarSig);
+            btnPaginaSiguiente.setAlpha(habilitarSig ? 1f : 0.35f);
         }
     }
 
@@ -324,75 +343,55 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         if (gridPagina1 == null) {
             return;
         }
-
         List<String> seleccionados = obtenerJuegosSeleccionados();
-        gridPagina1.removeAllViews();
-        if (gridPagina2 != null) {
-            gridPagina2.removeAllViews();
+
+        // Limpiar contenedor de páginas previo
+        if (scrollViewJuegos != null) {
+            if (scrollViewJuegos instanceof LinearLayout) {
+                ((LinearLayout) scrollViewJuegos).removeAllViews();
+            }
         }
 
-        gridPagina1.setColumnCount(2);
-        gridPagina1.setColumnOrderPreserved(false);
-        gridPagina1.setAlignmentMode(GridLayout.ALIGN_MARGINS);
-        if (gridPagina2 != null) {
-            gridPagina2.setColumnCount(2);
-            gridPagina2.setColumnOrderPreserved(false);
-            gridPagina2.setAlignmentMode(GridLayout.ALIGN_MARGINS);
-        }
+        paginasGrilla.clear();
 
         List<View> cardsRender = new ArrayList<>();
-
         for (String juegoId : seleccionados) {
             JuegoDisponible juego = buscarJuegoPorId(juegoId);
             if (juego != null) {
                 cardsRender.add(crearCardJuego(juego));
             }
         }
-
         cardsRender.add(crearCardAgregarJuego(seleccionados.size() < juegosDisponibles.size()));
 
+        final int ITEMS_POR_PAGINA = 8;
         int elementosVisibles = cardsRender.size();
-        hayPaginaDos = elementosVisibles > 8;
+        totalPaginas = Math.max(1, (elementosVisibles + ITEMS_POR_PAGINA - 1) / ITEMS_POR_PAGINA);
+        hayPaginaDos = totalPaginas > 1;
 
-        // Siempre reservar 4 filas x 2 columnas = 8 slots por página
-        gridPagina1.setRowCount(4);
-        if (gridPagina2 != null) {
-            gridPagina2.setRowCount(4);
-        }
+        // Crear cada página (GridLayout) dinámicamente y llenarla con hasta 8 items
+        for (int p = 0; p < totalPaginas; p++) {
+            GridLayout pageGrid = new GridLayout(this);
+            pageGrid.setColumnCount(2);
+            pageGrid.setRowCount(4);
+            pageGrid.setColumnOrderPreserved(false);
+            pageGrid.setAlignmentMode(GridLayout.ALIGN_MARGINS);
+            LinearLayout.LayoutParams pageParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            pageGrid.setLayoutParams(pageParams);
 
-        // Añadir tarjetas reales y luego placeholders invisibles para mantener la grilla 4x2
-        int addedPage1 = 0;
-        int addedPage2 = 0;
-        for (int i = 0; i < cardsRender.size(); i++) {
-            if (i < 8) {
+            int start = p * ITEMS_POR_PAGINA;
+            int end = Math.min(start + ITEMS_POR_PAGINA, elementosVisibles);
+            int added = 0;
+            for (int i = start; i < end; i++) {
                 View card = cardsRender.get(i);
-                aplicarPosicionGrid(card, i);
-                gridPagina1.addView(card);
-                addedPage1++;
-            } else if (gridPagina2 != null) {
-                View card = cardsRender.get(i);
-                aplicarPosicionGrid(card, i - 8);
-                gridPagina2.addView(card);
-                addedPage2++;
+                aplicarPosicionGrid(card, added);
+                pageGrid.addView(card);
+                added++;
             }
-        }
 
-        // Rellenar con placeholders invisibles para que la grilla mantenga 8 slots
-        for (int i = addedPage1; i < 8; i++) {
-            View placeholder = new View(this);
-            GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-            params.width = 0;
-            params.height = dpToPx(100);
-            params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f);
-            params.setMargins(dpToPx(4), dpToPx(4), dpToPx(4), dpToPx(4));
-            placeholder.setLayoutParams(params);
-            placeholder.setVisibility(View.INVISIBLE);
-            aplicarPosicionGrid(placeholder, i);
-            gridPagina1.addView(placeholder);
-        }
-
-        if (gridPagina2 != null) {
-            for (int i = addedPage2; i < 8; i++) {
+            // Rellenar con placeholders invisibles hasta ITEMS_POR_PAGINA
+            for (int i = added; i < ITEMS_POR_PAGINA; i++) {
                 View placeholder = new View(this);
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = 0;
@@ -402,14 +401,29 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
                 placeholder.setLayoutParams(params);
                 placeholder.setVisibility(View.INVISIBLE);
                 aplicarPosicionGrid(placeholder, i);
-                gridPagina2.addView(placeholder);
+                pageGrid.addView(placeholder);
             }
+
+            // Añadir página al contenedor y lista
+            if (scrollViewJuegos instanceof LinearLayout) {
+                ((LinearLayout) scrollViewJuegos).addView(pageGrid);
+            }
+            paginasGrilla.add(pageGrid);
         }
 
         if (layoutNavegacionPaginacion != null) {
-            layoutNavegacionPaginacion.setVisibility(View.VISIBLE);
+            // si el simulador está visible, ocultar paginación; sino mostrar
+            if (layoutSimuladorJuego != null && layoutSimuladorJuego.getVisibility() == View.VISIBLE) {
+                layoutNavegacionPaginacion.setVisibility(View.GONE);
+            } else {
+                layoutNavegacionPaginacion.setVisibility(View.VISIBLE);
+            }
         }
-        mostrarPagina(1);
+
+        // Normalizar paginaActual si queda fuera de rango
+        if (paginaActual < 1) paginaActual = 1;
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        mostrarPagina(paginaActual);
     }
 
     private List<String> obtenerJuegosSeleccionados() {
@@ -462,7 +476,11 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         card.setLayoutParams(params);
         card.setClickable(true);
         card.setFocusable(true);
-        card.setCardBackgroundColor(getResources().getColor(R.color.login_dropdown_field_bg));
+        if (juego.tipoJuego == 0) {
+            card.setCardBackgroundColor(ContextCompat.getColor(this, R.color.grayscale_game_bg));
+        } else {
+            card.setCardBackgroundColor(getResources().getColor(R.color.login_dropdown_field_bg));
+        }
         card.setRadius(dpToPx(12));
         card.setCardElevation(dpToPx(4));
         card.setStrokeColor(getResources().getColor(R.color.login_card_stroke));
@@ -479,6 +497,11 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
                 FrameLayout.LayoutParams.MATCH_PARENT));
         imagen.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imagen.setImageResource(juego.imagenRes);
+        if (juego.tipoJuego == 0) {
+            imagen.setColorFilter(
+                    ContextCompat.getColor(this, R.color.grayscale_icon_tint),
+                    android.graphics.PorterDuff.Mode.SRC_ATOP);
+        }
 
         TextView titulo = new TextView(this);
         FrameLayout.LayoutParams tituloParams = new FrameLayout.LayoutParams(
@@ -633,6 +656,9 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         mostrarJuego(tipoJuego);
         scrollViewJuegos.setVisibility(View.GONE);
         layoutSimuladorJuego.setVisibility(View.VISIBLE);
+        if (layoutNavegacionPaginacion != null) {
+            layoutNavegacionPaginacion.setVisibility(View.GONE);
+        }
     }
 
     private void aplicarPosicionGrid(View card, int indice) {
@@ -678,11 +704,46 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         return obtenerFechaActualStr().equals(fechaGanado);
     }
 
+    private void aplicarEstiloBotonListoBloqueado() {
+        if (btnAccionJuegos == null) return;
+        btnAccionJuegos.setText("Listo");
+        btnAccionJuegos.setEnabled(false);
+        btnAccionJuegos.setClickable(false);
+        btnAccionJuegos.setAlpha(0.5f);
+        ViewCompat.setBackgroundTintList(
+                btnAccionJuegos,
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.login_btn_bg))
+        );
+    }
+
+    private void aplicarEstiloBotonListoDesbloqueado() {
+        if (btnAccionJuegos == null) return;
+        btnAccionJuegos.setText("Listo");
+        btnAccionJuegos.setEnabled(true);
+        btnAccionJuegos.setClickable(true);
+        btnAccionJuegos.setAlpha(1.0f);
+        // Naranja cuando ya se desbloqueó pero aún no se confirma misión
+        ViewCompat.setBackgroundTintList(
+                btnAccionJuegos,
+                ColorStateList.valueOf(android.graphics.Color.parseColor("#FF9800"))
+        );
+    }
+
+    private void aplicarEstiloBotonListoCompletado() {
+        if (btnAccionJuegos == null) return;
+        btnAccionJuegos.setText("Completado");
+        btnAccionJuegos.setEnabled(false);
+        btnAccionJuegos.setClickable(false);
+        btnAccionJuegos.setAlpha(1.0f);
+        ViewCompat.setBackgroundTintList(
+                btnAccionJuegos,
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_mision_completada))
+        );
+    }
+
     private void habilitarBotonListo() {
         if (!listoConfirmado) {
-            btnAccionJuegos.setEnabled(true);
-            btnAccionJuegos.setClickable(true);
-            btnAccionJuegos.setAlpha(1.0f);
+            aplicarEstiloBotonListoDesbloqueado();
         }
     }
 
@@ -696,9 +757,7 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
                 .apply();
 
         // IMPORTANTE: NO detenemos el contador, sigue hasta medianoche
-        btnAccionJuegos.setEnabled(false);
-        btnAccionJuegos.setClickable(false);
-        btnAccionJuegos.setAlpha(0.5f);
+        aplicarEstiloBotonListoCompletado();
 
         if (tvContadorListo != null) {
             tvContadorListo.setText("Ya hiciste la misión del día");
@@ -1091,10 +1150,10 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         if (btnAccionJuegos != null) {
             if (fueJuegoGanadoHoy() && !listoConfirmado) {
                 habilitarBotonListo();
+            } else if (listoConfirmado) {
+                aplicarEstiloBotonListoCompletado();
             } else {
-                btnAccionJuegos.setEnabled(false);
-                btnAccionJuegos.setClickable(false);
-                btnAccionJuegos.setAlpha(0.5f);
+                aplicarEstiloBotonListoBloqueado();
             }
         }
 
@@ -1162,9 +1221,7 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
 
                 // Bloquear botón nuevamente
                 if (btnAccionJuegos != null) {
-                    btnAccionJuegos.setEnabled(false);
-                    btnAccionJuegos.setClickable(false);
-                    btnAccionJuegos.setAlpha(0.5f);
+                    aplicarEstiloBotonListoBloqueado();
                 }
 
                 // Reiniciar el contador para el siguiente día (24h)
