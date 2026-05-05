@@ -141,15 +141,7 @@ public class PantallaGuardian extends BaseActivity {
         // ── Botón limpiar historial ───────────────────────────────────
         Button btnLimpiar = findViewById(R.id.btnLimpiarHistorial);
         btnLimpiar.setOnClickListener(v -> {
-            long ahora = System.currentTimeMillis();
-            getSharedPreferences(PREFS_AURA, MODE_PRIVATE)
-                    .edit()
-                    .putLong(KEY_ULTIMA_LIMPIEZA, ahora)
-                    .apply();
-            
-            notificaciones.clear();
-            adapterNotificaciones.notifyDataSetChanged();
-            Toast.makeText(this, "Historial limpiado localmente", Toast.LENGTH_LONG).show();
+            eliminarHistorialServidorGuardia();
         });
 
         // ── Navegación Inferior ───────────────────────────────────────
@@ -444,6 +436,48 @@ public class PantallaGuardian extends BaseActivity {
             listenerMensajes.remove();
             listenerMensajes = null;
         }
+    }
+
+    private void eliminarHistorialServidorGuardia() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(this, "No hay usuario autenticado", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String guardianUid = user.getUid();
+        firestore.collection("mensajes")
+                .document(guardianUid)
+                .collection("historial")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.isEmpty()) {
+                        notificaciones.clear();
+                        adapterNotificaciones.notifyDataSetChanged();
+                        Toast.makeText(this, "Historial ya está limpio", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    final int total = snapshot.size();
+                    final int[] deleted = {0};
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        doc.getReference().delete().addOnCompleteListener(task -> {
+                            deleted[0]++;
+                            if (deleted[0] >= total) {
+                                limpiarVistaHistorial();
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(this,
+                        "Error al limpiar historial: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show());
+    }
+
+    private void limpiarVistaHistorial() {
+        notificaciones.clear();
+        adapterNotificaciones.notifyDataSetChanged();
+        Toast.makeText(this, "Historial limpiado en el servidor", Toast.LENGTH_LONG).show();
     }
 
     private void procesarUbicacionExplorador(@NonNull DocumentSnapshot snapshot) {

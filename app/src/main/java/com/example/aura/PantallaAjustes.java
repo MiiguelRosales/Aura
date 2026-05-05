@@ -21,12 +21,20 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PantallaAjustes extends BaseActivity {
 
@@ -327,78 +335,242 @@ public class PantallaAjustes extends BaseActivity {
     }
 
     private void guardarSolicitudEliminacion(String usuarioId, String nombreUsuario, String correo, String tipoUsuario, String motivo, androidx.appcompat.app.AlertDialog dialog) {
-                    String fecha = new SimpleDateFormat("dd/MM/yyyy hh:mm a", Locale.getDefault()).format(new Date());
+        dialog.dismiss();
+        // Eliminar datos asociados y cuenta de inmediato.
+        firestore.collection("solicitudes_eliminacion_cuenta")
+                .document(usuarioId)
+                .delete()
+                .addOnCompleteListener(ignore -> eliminarCuentaCompletamente(usuarioId));
+    }
 
-                    Map<String, Object> solicitud = new HashMap<>();
-                    solicitud.put("usuarioId", usuarioId);
-                    solicitud.put("nombreUsuario", nombreUsuario);
-                    solicitud.put("correo", correo);
-                    solicitud.put("tipoUsuario", tipoUsuario);
-                    solicitud.put("motivo", motivo);
-                    solicitud.put("fechaRegistro", fecha);
-                    solicitud.put("estado", "pendiente");
+    private void eliminarCuentaCompletamente(String usuarioId) {
+        List<String> chatIds = new ArrayList<>();
+        Set<String> vinculoIds = new HashSet<>();
+        AtomicInteger queryCounter = new AtomicInteger(2);
 
-                    firestore.collection("solicitudes_eliminacion_cuenta")
-                        .document(usuarioId)
-                        .set(solicitud, com.google.firebase.firestore.SetOptions.merge())
-                        .addOnSuccessListener(aVoid -> {
-                            dialog.dismiss();
-                            mostrarMensajeConfirmacion();
-                        })
-                        .addOnFailureListener(e -> {
-                            showMessage("Error al enviar la solicitud: " + e.getMessage());
+        // Buscar vinculos donde el usuario es guardian
+        firestore.collection("vinculos")
+                .whereEqualTo("guardianId", usuarioId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    procesarVinculos(querySnapshot, chatIds, vinculoIds);
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al leer vinculos: " + e.getMessage());
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
+                    }
+                });
+
+        // Buscar vinculos donde el usuario es explorador
+        firestore.collection("vinculos")
+                .whereEqualTo("exploradorId", usuarioId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    procesarVinculos(querySnapshot, chatIds, vinculoIds);
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al leer vinculos: " + e.getMessage());
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
+                    }
+                });
+    }
+
+    private void procesarVinculos(QuerySnapshot querySnapshot, List<String> chatIds, Set<String> vinculoIds) {
+        for (QueryDocumentSnapshot documento : querySnapshot) {
+            String guardianId = documento.getString("guardianId");
+            String exploradorId = documento.getString("exploradorId");
+            if (guardianId != null && exploradorId != null) {
+                String chatId = guardianId + "_" + exploradorId;
+                if (!chatIds.contains(chatId)) {
+                    chatIds.add(chatId);
+                }
+            }
+            vinculoIds.add(documento.getId());
+        }
+    }
+
+    private void eliminarVinculosYChats(String usuarioId, List<String> chatIds, Set<String> vinculoIds) {
+        AtomicInteger pending = new AtomicInteger(vinculoIds.size() + chatIds.size());
+
+        if (pending.get() == 0) {
+            eliminarMensajesGuardian(usuarioId);
+            return;
+        }
+
+        if (!vinculoIds.isEmpty()) {
+            for (String vinculoId : vinculoIds) {
+                firestore.collection("vinculos")
+                        .document(vinculoId)
+                        .delete()
+                        .addOnCompleteListener(task -> {
+                            if (pending.decrementAndGet() == 0) {
+                                eliminarMensajesGuardian(usuarioId);
+                            }
+                        });
+            }
+        }
+
+        if (!chatIds.isEmpty()) {
+            for (String chatId : chatIds) {
+                borrarChatCompleto(chatId, () -> {
+                    if (pending.decrementAndGet() == 0) {
+                        eliminarMensajesGuardian(usuarioId);
+                    }
+                });
+            }
+        }
+    }
+
+    private void borrarChatCompleto(String chatId, Runnable onComplete) {
+        firestore.collection("chats")
+                .document(chatId)
+                .collection("mensajes")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    AtomicInteger deleteCounter = new AtomicInteger(querySnapshot.size());
+                    if (deleteCounter.get() == 0) {
+                        firestore.collection("chats").document(chatId).delete().addOnCompleteListener(ignore -> onComplete.run());
+                        return;
+                    }
+                    for (QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete().addOnCompleteListener(task -> {
+                            if (deleteCounter.decrementAndGet() == 0) {
+                                firestore.collection("chats").document(chatId).delete().addOnCompleteListener(ignore -> onComplete.run());
+                            }
                         });
                     }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al borrar chat " + chatId + ": " + e.getMessage());
+                    onComplete.run();
+                });
+    }
 
-                    private void mostrarMensajeConfirmacion() {
-                    android.widget.LinearLayout container = new android.widget.LinearLayout(this);
-                    container.setOrientation(android.widget.LinearLayout.VERTICAL);
-                    container.setPadding(24, 24, 24, 24);
-
-                    com.google.android.material.card.MaterialCardView card = new com.google.android.material.card.MaterialCardView(this);
-                    card.setCardBackgroundColor(getResources().getColor(R.color.login_card_bg));
-                    card.setCardElevation(8);
-                    card.setRadius(16);
-
-                    android.widget.LinearLayout content = new android.widget.LinearLayout(this);
-                    content.setOrientation(android.widget.LinearLayout.VERTICAL);
-                    content.setPadding(16, 16, 16, 16);
-
-                    android.widget.TextView tvTitulo = new android.widget.TextView(this);
-                    tvTitulo.setText("Solicitud Registrada");
-                    tvTitulo.setTextSize(18);
-                    tvTitulo.setTextColor(getResources().getColor(R.color.aura_text_primary));
-                    tvTitulo.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
-                    tvTitulo.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
-
-                    android.widget.TextView tvMensaje = new android.widget.TextView(this);
-                    tvMensaje.setText("Tu solicitud de eliminación ha sido recibida.\n\n" +
-                        "✓ Tu cuenta será eliminada en 10 días\n" +
-                        "✓ Se borrarán todos tus chats\n" +
-                        "✓ Se desvincularán tus guardianes/exploradores\n" +
-                        "✓ Para volver a usar Aura, deberás registrarte nuevamente\n\n" +
-                        "Si tienes preguntas, contáctanos en soporte técnico.");
-                    tvMensaje.setTextSize(13);
-                    tvMensaje.setTextColor(getResources().getColor(R.color.aura_text_primary));
-                    tvMensaje.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.NORMAL));
-                    tvMensaje.setLineSpacing(6f, 1.0f);
-                    android.widget.LinearLayout.LayoutParams msgParams = new android.widget.LinearLayout.LayoutParams(
-                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                        android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
-                    msgParams.setMargins(0, 16, 0, 0);
-                    tvMensaje.setLayoutParams(msgParams);
-
-                    content.addView(tvTitulo);
-                    content.addView(tvMensaje);
-                    card.addView(content);
-                    container.addView(card);
-
-                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-                        .setView(container)
-                        .setPositiveButton("Entendido", (dialog, which) -> dialog.dismiss())
-                        .setCancelable(false)
-                        .show();
+    private void eliminarMensajesGuardian(String usuarioId) {
+        firestore.collection("mensajes")
+                .document(usuarioId)
+                .collection("historial")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    AtomicInteger deleteCounter = new AtomicInteger(querySnapshot.size());
+                    if (deleteCounter.get() == 0) {
+                        firestore.collection("mensajes").document(usuarioId).delete().addOnCompleteListener(ignore -> eliminarUsuarioFirestore(usuarioId));
+                        return;
                     }
+                    for (QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete().addOnCompleteListener(task -> {
+                            if (deleteCounter.decrementAndGet() == 0) {
+                                firestore.collection("mensajes").document(usuarioId).delete().addOnCompleteListener(ignore -> eliminarUsuarioFirestore(usuarioId));
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al borrar historial de mensajes: " + e.getMessage());
+                    eliminarUsuarioFirestore(usuarioId);
+                });
+    }
+
+    private void eliminarUsuarioFirestore(String usuarioId) {
+        firestore.collection("usuarios")
+                .document(usuarioId)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    eliminarAuthUsuario(usuarioId);
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al eliminar usuario: " + e.getMessage());
+                    eliminarAuthUsuario(usuarioId);
+                });
+    }
+
+    private void eliminarAuthUsuario(String usuarioId) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null && usuarioId.equals(currentUser.getUid())) {
+            currentUser.delete()
+                    .addOnSuccessListener(aVoid -> {
+                        mostrarMensajeConfirmacion();
+                    })
+                    .addOnFailureListener(e -> {
+                        showMessage("Los datos se eliminaron, pero la cuenta de autenticación requiere reautenticación: " + e.getMessage());
+                        cerrarSesionTrasEliminacion();
+                    });
+        } else {
+            cerrarSesionTrasEliminacion();
+        }
+    }
+
+    private void cerrarSesionTrasEliminacion() {
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putBoolean("guardarLogin", false)
+                .apply();
+        stopService(new Intent(PantallaAjustes.this, ChatNotificationForegroundService.class));
+        auth.signOut();
+        startActivity(new Intent(PantallaAjustes.this, pantalla_inicio.class));
+        finishAffinity();
+    }
+
+    private void mostrarMensajeConfirmacion() {
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        container.setPadding(24, 24, 24, 24);
+
+        com.google.android.material.card.MaterialCardView card = new com.google.android.material.card.MaterialCardView(this);
+        card.setCardBackgroundColor(getResources().getColor(R.color.login_card_bg));
+        card.setCardElevation(8);
+        card.setRadius(16);
+
+        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
+        content.setOrientation(android.widget.LinearLayout.VERTICAL);
+        content.setPadding(16, 16, 16, 16);
+
+        android.widget.TextView tvTitulo = new android.widget.TextView(this);
+        tvTitulo.setText("Eliminación completa");
+        tvTitulo.setTextSize(18);
+        tvTitulo.setTextColor(getResources().getColor(R.color.aura_text_primary));
+        tvTitulo.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
+        tvTitulo.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        android.widget.TextView tvMensaje = new android.widget.TextView(this);
+        tvMensaje.setText("Tu cuenta y todos los datos vinculados se eliminaron de inmediato.\n\n" +
+                "✓ Chats eliminados\n" +
+                "✓ Vinculaciones eliminadas\n" +
+                "✓ Usuario eliminado\n" +
+                "✓ Para volver a usar Aura deberás registrarte nuevamente\n\n" +
+                "Se cerrará la sesión ahora.");
+        tvMensaje.setTextSize(13);
+        tvMensaje.setTextColor(getResources().getColor(R.color.aura_text_primary));
+        tvMensaje.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.NORMAL));
+        tvMensaje.setLineSpacing(6f, 1.0f);
+        android.widget.LinearLayout.LayoutParams msgParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        msgParams.setMargins(0, 16, 0, 0);
+        tvMensaje.setLayoutParams(msgParams);
+
+        content.addView(tvTitulo);
+        content.addView(tvMensaje);
+        card.addView(content);
+        container.addView(card);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setView(container)
+                .setPositiveButton("Entendido", (dialog, which) -> {
+                    dialog.dismiss();
+                    cerrarSesionTrasEliminacion();
+                })
+                .setCancelable(false)
+                .show();
+    }
     }

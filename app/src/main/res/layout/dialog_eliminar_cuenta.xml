@@ -162,7 +162,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="No se vincula mi guardián"
+            android:text="No pude vincular a mi guardián/explorador"
             android:textColor="@color/aura_text_primary"
             android:textSize="13sp"
             android:fontFamily="sans-serif-condensed"
@@ -248,7 +248,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="• Tu cuenta será eliminada en 3 días\n• Se borrarán todos tus chats\n• Se desvincularán los guardianes/exploradores\n• Deberás registrarte de nuevo para crear una nueva cuenta"
+                android:text="• Tu cuenta se eliminará de inmediato\n• Se borrarán todos tus chats\n• Se desvincularán los guardianes/exploradores\n• Deberás registrarte de nuevo para crear una nueva cuenta"
                 android:textColor="@color/aura_text_primary"
                 android:textSize="11sp"
                 android:fontFamily="sans-serif-condensed"
