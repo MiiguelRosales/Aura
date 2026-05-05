@@ -132,6 +132,7 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
     private static final String PREFS_JUEGO = "JuegoPrefs";
     private static final String KEY_FECHA_GANADO = "fecha_juego_ganado";
     private static final String KEY_LISTO_CONFIRMADO = "listo_confirmado_hoy";
+    private static final String FIRESTORE_FIELD_ULTIMO_CHECKIN_CONFIRMADO = "ultimoCheckinConfirmado";
     private static final String KEY_JUEGOS_SELECCIONADOS = "juegos_seleccionados";
 
         private List<JuegoDisponible> juegosDisponibles;
@@ -189,7 +190,7 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
         if (SIMULAR_MUCHOS_JUEGOS) {
             // Generar juegos simulados adicionales para llenar varias páginas
             for (int i = 4; i <= 20; i++) {
-                juegosDisponibles.add(new JuegoDisponible("simulacion_" + i, "Juego sim " + i, R.drawable.mesa, 0));
+                juegosDisponibles.add(new JuegoDisponible("simulacion_" + i, "Juego simulado " + i, R.drawable.mesa, 0));
             }
         }
 
@@ -765,10 +766,30 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
             tvContadorListo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         }
 
+        guardarCheckinConfirmadoEnFirestore(obtenerFechaActualStr());
+
         cancelarAlarmaMedianoche();
         enviarMensajeAlGuardian("TODO BIEN 👌🏻", "listo_confirmado");
+    }
 
-        verificarYMostrarNotificacion();
+    private void guardarCheckinConfirmadoEnFirestore(@NonNull String fechaConfirmado) {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null && exploradorUid == null) {
+            return;
+        }
+        String uid = user != null ? user.getUid() : exploradorUid;
+        if (uid == null) {
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put(FIRESTORE_FIELD_ULTIMO_CHECKIN_CONFIRMADO, fechaConfirmado);
+
+        firestore.collection("usuarios")
+                .document(uid)
+                .set(updates, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> android.util.Log.d("PantallaJuegos", "Check-in diario sincronizado en Firestore"))
+                .addOnFailureListener(e -> android.util.Log.e("PantallaJuegos", "Error guardando check-in en Firestore", e));
     }
 
     private void createNotificationChannel() {
@@ -1157,6 +1178,12 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
             }
         }
 
+        if (listoConfirmado && tvContadorListo != null) {
+            tvContadorListo.setText("Ya hiciste la misión del día");
+            tvContadorListo.setTextColor(ContextCompat.getColor(this, R.color.color_mision_completada));
+            tvContadorListo.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        }
+
         // Calcular tiempo hasta la próxima medianoche
         java.util.Calendar c = java.util.Calendar.getInstance();
         long now = c.getTimeInMillis();
@@ -1380,6 +1407,14 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
                     codigoExplorador = documentSnapshot.getString("codigoExplorador");
                     nombreExplorador = documentSnapshot.getString("nombreUsuario");
                     guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+
+                    String fechaCheckinConfirmado = documentSnapshot.getString(FIRESTORE_FIELD_ULTIMO_CHECKIN_CONFIRMADO);
+                    if (fechaCheckinConfirmado != null && fechaCheckinConfirmado.equals(obtenerFechaActualStr())) {
+                        listoConfirmado = true;
+                        obtenerPrefsJuegos().edit()
+                                .putString(KEY_LISTO_CONFIRMADO, fechaCheckinConfirmado)
+                                .apply();
+                    }
 
                     if (guardianVinculadoId == null || guardianVinculadoId.trim().isEmpty()) {
                         android.util.Log.d("PantallaJuegos", "Redirigiendo a CompartirCodigo (sin vinculo)");
