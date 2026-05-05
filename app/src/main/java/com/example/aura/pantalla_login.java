@@ -230,20 +230,46 @@ public class pantalla_login extends BaseActivity {
                                 Intent intentDestino;
                                 if (TIPO_GUARDIAN.equals(tipoReal)) {
                                     String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
-                                    boolean tieneVinculo = exploradorVinculadoId != null
-                                            && !exploradorVinculadoId.trim().isEmpty();
-
-                                    intentDestino = tieneVinculo
-                                            ? new Intent(pantalla_login.this, PantallaGuardian.class)
-                                            : new Intent(pantalla_login.this, PantallaVincular.class);
+                                    if (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty()) {
+                                        firestore.collection("usuarios").document(exploradorVinculadoId)
+                                                .get()
+                                                .addOnSuccessListener(exploradorSnapshot -> {
+                                                    Intent intent = exploradorSnapshot.exists()
+                                                            ? new Intent(pantalla_login.this, PantallaGuardian.class)
+                                                            : new Intent(pantalla_login.this, PantallaVincular.class);
+                                                    Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();
+                                                    startActivity(intent);
+                                                    finish();
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();
+                                                    startActivity(new Intent(pantalla_login.this, PantallaVincular.class));
+                                                    finish();
+                                                });
+                                        return;
+                                    }
+                                    intentDestino = new Intent(pantalla_login.this, PantallaVincular.class);
                                 } else {
                                     String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
-                                    boolean tieneVinculo = guardianVinculadoId != null
-                                            && !guardianVinculadoId.trim().isEmpty();
-
-                                    intentDestino = tieneVinculo
-                                            ? new Intent(pantalla_login.this, PantallaJuegos.class)
-                                            : new Intent(pantalla_login.this, PantallaCompartirCodigo.class);
+                                    if (guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty()) {
+                                        firestore.collection("usuarios").document(guardianVinculadoId)
+                                                .get()
+                                                .addOnSuccessListener(guardianSnapshot -> {
+                                                    Intent intent = guardianSnapshot.exists()
+                                                            ? new Intent(pantalla_login.this, PantallaJuegos.class)
+                                                            : new Intent(pantalla_login.this, PantallaCompartirCodigo.class);
+                                                    Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();
+                                                    startActivity(intent);
+                                                    finish();
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();
+                                                    startActivity(new Intent(pantalla_login.this, PantallaCompartirCodigo.class));
+                                                    finish();
+                                                });
+                                        return;
+                                    }
+                                    intentDestino = new Intent(pantalla_login.this, PantallaCompartirCodigo.class);
                                 }
 
                                 Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_LONG).show();

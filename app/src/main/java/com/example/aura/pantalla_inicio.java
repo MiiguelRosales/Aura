@@ -175,16 +175,46 @@ public class pantalla_inicio extends AppCompatActivity {
                                     Intent intentDestino;
                                     if ("GUARDIAN".equals(tipoReal)) {
                                         String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
-                                        boolean tieneVinculo = exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty();
-                                        intentDestino = tieneVinculo
-                                                ? new Intent(pantalla_inicio.this, PantallaGuardian.class)
-                                                : new Intent(pantalla_inicio.this, PantallaVincular.class);
+                                        if (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty()) {
+                                            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                    .collection("usuarios")
+                                                    .document(exploradorVinculadoId)
+                                                    .get()
+                                                    .addOnSuccessListener(exploradorSnapshot -> {
+                                                        Intent intent = exploradorSnapshot.exists()
+                                                                ? new Intent(pantalla_inicio.this, PantallaGuardian.class)
+                                                                : new Intent(pantalla_inicio.this, PantallaVincular.class);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        startActivity(new Intent(pantalla_inicio.this, PantallaVincular.class));
+                                                        finish();
+                                                    });
+                                            return;
+                                        }
+                                        intentDestino = new Intent(pantalla_inicio.this, PantallaVincular.class);
                                     } else {
                                         String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
-                                        boolean tieneVinculo = guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty();
-                                        intentDestino = tieneVinculo
-                                                ? new Intent(pantalla_inicio.this, PantallaJuegos.class)
-                                                : new Intent(pantalla_inicio.this, PantallaCompartirCodigo.class);
+                                        if (guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty()) {
+                                            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                                                    .collection("usuarios")
+                                                    .document(guardianVinculadoId)
+                                                    .get()
+                                                    .addOnSuccessListener(guardianSnapshot -> {
+                                                        Intent intent = guardianSnapshot.exists()
+                                                                ? new Intent(pantalla_inicio.this, PantallaJuegos.class)
+                                                                : new Intent(pantalla_inicio.this, PantallaCompartirCodigo.class);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    })
+                                                    .addOnFailureListener(e -> {
+                                                        startActivity(new Intent(pantalla_inicio.this, PantallaCompartirCodigo.class));
+                                                        finish();
+                                                    });
+                                            return;
+                                        }
+                                        intentDestino = new Intent(pantalla_inicio.this, PantallaCompartirCodigo.class);
                                     }
                                     startActivity(intentDestino);
                                     finish();

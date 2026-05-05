@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -348,12 +349,27 @@ public class PantallaAjustes extends BaseActivity {
         Set<String> vinculoIds = new HashSet<>();
         AtomicInteger queryCounter = new AtomicInteger(2);
 
+        // Limpiar la referencia directa en el usuario vinculado, incluso si no existe un documento del vínculo.
+        firestore.collection("usuarios").document(usuarioId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                    String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
+                    if (guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty()) {
+                        limpiarDatosVinculado(guardianVinculadoId, true);
+                    }
+                    if (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty()) {
+                        limpiarDatosVinculado(exploradorVinculadoId, false);
+                    }
+                })
+                .addOnFailureListener(e -> showMessage("Error al leer usuario para limpieza de vínculo: " + e.getMessage()));
+
         // Buscar vinculos donde el usuario es guardian
         firestore.collection("vinculos")
                 .whereEqualTo("guardianId", usuarioId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    procesarVinculos(querySnapshot, chatIds, vinculoIds);
+                    procesarVinculos(querySnapshot, usuarioId, chatIds, vinculoIds);
                     if (queryCounter.decrementAndGet() == 0) {
                         eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
                     }
@@ -370,7 +386,7 @@ public class PantallaAjustes extends BaseActivity {
                 .whereEqualTo("exploradorId", usuarioId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    procesarVinculos(querySnapshot, chatIds, vinculoIds);
+                    procesarVinculos(querySnapshot, usuarioId, chatIds, vinculoIds);
                     if (queryCounter.decrementAndGet() == 0) {
                         eliminarVinculosYChats(usuarioId, chatIds, vinculoIds);
                     }
@@ -383,7 +399,7 @@ public class PantallaAjustes extends BaseActivity {
                 });
     }
 
-    private void procesarVinculos(QuerySnapshot querySnapshot, List<String> chatIds, Set<String> vinculoIds) {
+    private void procesarVinculos(QuerySnapshot querySnapshot, String usuarioId, List<String> chatIds, Set<String> vinculoIds) {
         for (QueryDocumentSnapshot documento : querySnapshot) {
             String guardianId = documento.getString("guardianId");
             String exploradorId = documento.getString("exploradorId");
@@ -393,8 +409,38 @@ public class PantallaAjustes extends BaseActivity {
                     chatIds.add(chatId);
                 }
             }
+            if (usuarioId.equals(guardianId) && exploradorId != null && !exploradorId.trim().isEmpty()) {
+                limpiarDatosVinculado(exploradorId, false);
+            } else if (usuarioId.equals(exploradorId) && guardianId != null && !guardianId.trim().isEmpty()) {
+                limpiarDatosVinculado(guardianId, true);
+            }
             vinculoIds.add(documento.getId());
         }
+    }
+
+    private void limpiarDatosVinculado(String usuarioId, boolean esGuardian) {
+        if (usuarioId == null || usuarioId.trim().isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> actualizaciones = new HashMap<>();
+        if (esGuardian) {
+            actualizaciones.put("exploradorVinculadoId", FieldValue.delete());
+            actualizaciones.put("codigoVinculado", FieldValue.delete());
+            actualizaciones.put("vinculadoEn", FieldValue.delete());
+        } else {
+            actualizaciones.put("guardianVinculadoId", FieldValue.delete());
+            actualizaciones.put("vinculadoEn", FieldValue.delete());
+        }
+
+        firestore.collection("usuarios").document(usuarioId)
+                .update(actualizaciones)
+                .addOnSuccessListener(unused -> {
+                    // Ya se limpiaron los datos de vinculación del usuario opuesto.
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al limpiar vínculo del usuario vinculado: " + e.getMessage());
+                });
     }
 
     private void eliminarVinculosYChats(String usuarioId, List<String> chatIds, Set<String> vinculoIds) {
