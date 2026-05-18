@@ -34,6 +34,7 @@ public class pantalla_login extends BaseActivity {
 
     private static final String PREFS_NAME = "AuraPrefs";
     private static final String KEY_TIPO_USUARIO = "tipoUsuario";
+    private static final String KEY_CURRENT_UID = "currentUid";
     private static final String KEY_GUARDAR_LOGIN = "guardarLogin";
     private static final String KEY_CORREO_LOGIN = "correoLogin";
     private static final String KEY_CONTRASENA_LOGIN = "contrasenaLogin";
@@ -211,7 +212,10 @@ public class pantalla_login extends BaseActivity {
                                 }
 
                                 SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                                prefs.edit().putString(KEY_TIPO_USUARIO, tipoReal).apply();
+                                prefs.edit()
+                                        .putString(KEY_TIPO_USUARIO, tipoReal)
+                                        .putString(KEY_CURRENT_UID, uid)
+                                        .apply();
 
                                 // Obtener y guardar token FCM para notificaciones
                                 FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> {

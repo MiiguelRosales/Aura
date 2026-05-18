@@ -3,6 +3,7 @@ package com.example.aura;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class PantallaVincular extends BaseActivity {
 
@@ -80,6 +82,9 @@ public class PantallaVincular extends BaseActivity {
         });
 
         btnDesvincular.setOnClickListener(v -> mostrarDialogoDesvincular());
+
+        MaterialButton btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
+        btnEliminarCuenta.setOnClickListener(v -> mostrarDialogoEliminarCuenta());
     }
 
     private void cargarEstadoVinculo(MaterialCardView card, TextView tvCodigo,
@@ -148,6 +153,7 @@ public class PantallaVincular extends BaseActivity {
                                         .apply();
 
                                 Toast.makeText(this, "Vínculo eliminado correctamente", Toast.LENGTH_LONG).show();
+                                eliminarHistorialDelExplorador(guardianUid, exploradorVinculadoId);
                                 // Recargar la pantalla para mostrar estado sin vínculo
                                 finish();
                                 startActivity(getIntent());
@@ -157,6 +163,26 @@ public class PantallaVincular extends BaseActivity {
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error al desvincular", Toast.LENGTH_LONG).show());
+    }
+
+    private void eliminarHistorialDelExplorador(String guardianUid, String exploradorUid) {
+        if (TextUtils.isEmpty(guardianUid) || TextUtils.isEmpty(exploradorUid)) {
+            return;
+        }
+
+        firestore.collection("mensajes")
+                .document(guardianUid)
+                .collection("historial")
+                .whereEqualTo("remitenteId", exploradorUid)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("PantallaVincular", "Error al limpiar historial del explorador", e);
+                });
     }
 
     private void vincularConCodigo(String codigo, MaterialCardView card, TextView tvCodigo, MaterialButton btnDesvincular) {

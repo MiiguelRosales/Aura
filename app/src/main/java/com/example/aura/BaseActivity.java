@@ -18,13 +18,17 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.Timestamp;
+import java.util.List;
 
 import java.util.Date;
 
@@ -41,6 +45,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private ListenerRegistration listenerChatNotificaciones;
     private String chatNotificacionesUid;
+    private String pendingEliminarCuentaPassword;
 
     @Override
     public void setContentView(int layoutResID) {
@@ -377,5 +382,437 @@ public class BaseActivity extends AppCompatActivity {
 
     private String defaultString(String valor, String porDefecto) {
         return valor != null && !valor.trim().isEmpty() ? valor : porDefecto;
+    }
+
+    protected void mostrarDialogoEliminarCuenta() {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) {
+            return;
+        }
+
+        firestore.collection("usuarios").document(user.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        return;
+                    }
+
+                    String nombreUsuario = documentSnapshot.getString("nombreUsuario");
+                    String correo = user.getEmail();
+                    String tipoUsuario = documentSnapshot.getString("tipoUsuario");
+
+                    android.view.LayoutInflater inflater = android.view.LayoutInflater.from(this);
+                    android.view.View dialogView = inflater.inflate(R.layout.dialog_eliminar_cuenta, null);
+
+                    android.widget.TextView tvNombreUsuario = dialogView.findViewById(R.id.tvNombreUsuario);
+                    android.widget.TextView tvCorreo = dialogView.findViewById(R.id.tvCorreo);
+                    android.widget.TextView tvContrasena = dialogView.findViewById(R.id.tvContrasena);
+
+                    android.widget.CheckBox cbNoUso = dialogView.findViewById(R.id.cbNoUso);
+                    android.widget.CheckBox cbNoVinculo = dialogView.findViewById(R.id.cbNoVinculo);
+                    android.widget.CheckBox cbOtro = dialogView.findViewById(R.id.cbOtro);
+                    com.google.android.material.textfield.TextInputLayout tilMotivoPrincipal = dialogView.findViewById(R.id.tilMotivoPrincipal);
+                    com.google.android.material.textfield.TextInputEditText etMotivoPrincipal = dialogView.findViewById(R.id.etMotivoPrincipal);
+
+                    android.widget.Button btnCancelar = dialogView.findViewById(R.id.btnCancelarEliminar);
+                    android.widget.Button btnEnviar = dialogView.findViewById(R.id.btnEnviarSolicitud);
+
+                    tvNombreUsuario.setText(nombreUsuario != null ? nombreUsuario : "Usuario");
+                    tvCorreo.setText(correo != null ? correo : "");
+                    tvContrasena.setText("••••••••");
+                    com.google.android.material.textfield.TextInputEditText etConfirmarPassword = dialogView.findViewById(R.id.etConfirmarPassword);
+
+                    com.google.android.material.dialog.MaterialAlertDialogBuilder builder =
+                            new com.google.android.material.dialog.MaterialAlertDialogBuilder(this);
+                    builder.setView(dialogView);
+
+                    androidx.appcompat.app.AlertDialog dialog = builder.create();
+
+                    cbOtro.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        tilMotivoPrincipal.setVisibility(isChecked ? android.view.View.VISIBLE : android.view.View.GONE);
+                        if (!isChecked) {
+                            etMotivoPrincipal.setText("");
+                        }
+                    });
+
+                    btnCancelar.setOnClickListener(v -> dialog.dismiss());
+                    btnEnviar.setOnClickListener(v -> {
+                        boolean noUso = cbNoUso.isChecked();
+                        boolean noVinculo = cbNoVinculo.isChecked();
+                        boolean otro = cbOtro.isChecked();
+
+                        if (!noUso && !noVinculo && !otro) {
+                            showMessage("Por favor selecciona un motivo");
+                            return;
+                        }
+
+                        if (otro && etMotivoPrincipal.getText().toString().trim().isEmpty()) {
+                            showMessage("Por favor describe tu motivo");
+                            return;
+                        }
+
+                        StringBuilder motivoBuilder = new StringBuilder();
+                        if (noUso) motivoBuilder.append("No uso la aplicación; ");
+                        if (noVinculo) motivoBuilder.append("No vinculé a mi guardián; ");
+                        if (otro) {
+                            motivoBuilder.append("Otros: ").append(etMotivoPrincipal.getText().toString());
+                        }
+
+                        String motivoFinal = motivoBuilder.toString();
+                        String password = etConfirmarPassword.getText() != null
+                                ? etConfirmarPassword.getText().toString().trim()
+                                : "";
+                        if (password.isEmpty()) {
+                            showMessage("Ingresa tu contraseña para confirmar la eliminación");
+                            return;
+                        }
+                        guardarSolicitudEliminacion(user.getUid(), nombreUsuario, correo, tipoUsuario, motivoFinal, dialog, password);
+                    });
+
+                    dialog.show();
+                })
+                .addOnFailureListener(e -> showMessage("Error al obtener datos del usuario: " + e.getMessage()));
+    }
+
+    private void guardarSolicitudEliminacion(String usuarioId,
+                                             String nombreUsuario,
+                                             String correo,
+                                             String tipoUsuario,
+                                             String motivo,
+                                             androidx.appcompat.app.AlertDialog dialog,
+                                             String password) {
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        dialog.dismiss();
+        firestore.collection("usuarios").document(usuarioId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                    String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
+
+                    if ((guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty()) ||
+                            (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty())) {
+                        showMessage("No puedes eliminar tu cuenta mientras tengas un vínculo activo. Primero desvincula la cuenta.");
+                        return;
+                    }
+
+                    pendingEliminarCuentaPassword = password;
+                    firestore.collection("solicitudes_eliminacion_cuenta")
+                            .document(usuarioId)
+                            .delete()
+                            .addOnCompleteListener(ignore -> eliminarCuentaCompletamente(usuarioId, auth, firestore));
+                })
+                .addOnFailureListener(e -> showMessage("Error al verificar vínculo antes de eliminar: " + e.getMessage()));
+    }
+
+    private void eliminarCuentaCompletamente(String usuarioId, FirebaseAuth auth, FirebaseFirestore firestore) {
+        List<String> chatIds = new java.util.ArrayList<>();
+        java.util.Set<String> vinculoIds = new java.util.HashSet<>();
+        java.util.concurrent.atomic.AtomicInteger queryCounter = new java.util.concurrent.atomic.AtomicInteger(2);
+
+        firestore.collection("usuarios").document(usuarioId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    String guardianVinculadoId = documentSnapshot.getString("guardianVinculadoId");
+                    String exploradorVinculadoId = documentSnapshot.getString("exploradorVinculadoId");
+                    if (guardianVinculadoId != null && !guardianVinculadoId.trim().isEmpty()) {
+                        limpiarDatosVinculado(guardianVinculadoId, true, firestore);
+                        eliminarHistorialVinculado(guardianVinculadoId, usuarioId, firestore);
+                    }
+                    if (exploradorVinculadoId != null && !exploradorVinculadoId.trim().isEmpty()) {
+                        limpiarDatosVinculado(exploradorVinculadoId, false, firestore);
+                    }
+                })
+                .addOnFailureListener(e -> showMessage("Error al leer usuario para limpieza de vínculo: " + e.getMessage()));
+
+        firestore.collection("vinculos")
+                .whereEqualTo("guardianId", usuarioId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    procesarVinculos(querySnapshot, usuarioId, chatIds, vinculoIds);
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds, firestore, auth);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al leer vinculos: " + e.getMessage());
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds, firestore, auth);
+                    }
+                });
+
+        firestore.collection("vinculos")
+                .whereEqualTo("exploradorId", usuarioId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    procesarVinculos(querySnapshot, usuarioId, chatIds, vinculoIds);
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds, firestore, auth);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al leer vinculos: " + e.getMessage());
+                    if (queryCounter.decrementAndGet() == 0) {
+                        eliminarVinculosYChats(usuarioId, chatIds, vinculoIds, firestore, auth);
+                    }
+                });
+    }
+
+    private void procesarVinculos(com.google.firebase.firestore.QuerySnapshot querySnapshot,
+                                  String usuarioId,
+                                  List<String> chatIds,
+                                  java.util.Set<String> vinculoIds) {
+        for (com.google.firebase.firestore.QueryDocumentSnapshot documento : querySnapshot) {
+            String guardianId = documento.getString("guardianId");
+            String exploradorId = documento.getString("exploradorId");
+            if (guardianId != null && exploradorId != null) {
+                String chatId = guardianId + "_" + exploradorId;
+                if (!chatIds.contains(chatId)) {
+                    chatIds.add(chatId);
+                }
+            }
+            if (usuarioId.equals(guardianId) && exploradorId != null && !exploradorId.trim().isEmpty()) {
+                limpiarDatosVinculado(exploradorId, false, FirebaseFirestore.getInstance());
+            } else if (usuarioId.equals(exploradorId) && guardianId != null && !guardianId.trim().isEmpty()) {
+                limpiarDatosVinculado(guardianId, true, FirebaseFirestore.getInstance());
+            }
+            vinculoIds.add(documento.getId());
+        }
+    }
+
+    private void limpiarDatosVinculado(String usuarioId, boolean esGuardian, FirebaseFirestore firestore) {
+        if (usuarioId == null || usuarioId.trim().isEmpty()) {
+            return;
+        }
+
+        java.util.Map<String, Object> actualizaciones = new java.util.HashMap<>();
+        if (esGuardian) {
+            actualizaciones.put("exploradorVinculadoId", com.google.firebase.firestore.FieldValue.delete());
+            actualizaciones.put("codigoVinculado", com.google.firebase.firestore.FieldValue.delete());
+            actualizaciones.put("vinculadoEn", com.google.firebase.firestore.FieldValue.delete());
+        } else {
+            actualizaciones.put("guardianVinculadoId", com.google.firebase.firestore.FieldValue.delete());
+            actualizaciones.put("vinculadoEn", com.google.firebase.firestore.FieldValue.delete());
+        }
+
+        firestore.collection("usuarios").document(usuarioId)
+                .update(actualizaciones)
+                .addOnSuccessListener(unused -> {
+                    // Datos limpiados.
+                })
+                .addOnFailureListener(e -> showMessage("Error al limpiar vínculo del usuario vinculado: " + e.getMessage()));
+    }
+
+    private void eliminarHistorialVinculado(String usuarioId, String remitenteId, FirebaseFirestore firestore) {
+        if (usuarioId == null || usuarioId.trim().isEmpty() || remitenteId == null || remitenteId.trim().isEmpty()) {
+            return;
+        }
+
+        firestore.collection("mensajes")
+                .document(usuarioId)
+                .collection("historial")
+                .whereEqualTo("remitenteId", remitenteId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete();
+                    }
+                })
+                .addOnFailureListener(e -> showMessage("Error al limpiar historial del vinculado: " + e.getMessage()));
+    }
+
+    private void eliminarVinculosYChats(String usuarioId,
+                                        List<String> chatIds,
+                                        java.util.Set<String> vinculoIds,
+                                        FirebaseFirestore firestore,
+                                        FirebaseAuth auth) {
+        java.util.concurrent.atomic.AtomicInteger pending = new java.util.concurrent.atomic.AtomicInteger(vinculoIds.size() + chatIds.size());
+
+        if (pending.get() == 0) {
+            eliminarMensajesGuardian(usuarioId, firestore, auth);
+            return;
+        }
+
+        if (!vinculoIds.isEmpty()) {
+            for (String vinculoId : vinculoIds) {
+                firestore.collection("vinculos")
+                        .document(vinculoId)
+                        .delete()
+                        .addOnCompleteListener(task -> {
+                            if (pending.decrementAndGet() == 0) {
+                                eliminarMensajesGuardian(usuarioId, firestore, auth);
+                            }
+                        });
+            }
+        }
+
+        if (!chatIds.isEmpty()) {
+            for (String chatId : chatIds) {
+                borrarChatCompleto(chatId, () -> {
+                    if (pending.decrementAndGet() == 0) {
+                        eliminarMensajesGuardian(usuarioId, firestore, auth);
+                    }
+                }, firestore);
+            }
+        }
+    }
+
+    private void borrarChatCompleto(String chatId, Runnable onComplete, FirebaseFirestore firestore) {
+        firestore.collection("chats")
+                .document(chatId)
+                .collection("mensajes")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    java.util.concurrent.atomic.AtomicInteger deleteCounter = new java.util.concurrent.atomic.AtomicInteger(querySnapshot.size());
+                    if (deleteCounter.get() == 0) {
+                        firestore.collection("chats").document(chatId).delete().addOnCompleteListener(ignore -> onComplete.run());
+                        return;
+                    }
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete().addOnCompleteListener(task -> {
+                            if (deleteCounter.decrementAndGet() == 0) {
+                                firestore.collection("chats").document(chatId).delete().addOnCompleteListener(ignore -> onComplete.run());
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al borrar chat " + chatId + ": " + e.getMessage());
+                    onComplete.run();
+                });
+    }
+
+    private void eliminarMensajesGuardian(String usuarioId, FirebaseFirestore firestore, FirebaseAuth auth) {
+        firestore.collection("mensajes")
+                .document(usuarioId)
+                .collection("historial")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    java.util.concurrent.atomic.AtomicInteger deleteCounter = new java.util.concurrent.atomic.AtomicInteger(querySnapshot.size());
+                    if (deleteCounter.get() == 0) {
+                        firestore.collection("mensajes").document(usuarioId).delete().addOnCompleteListener(ignore -> eliminarUsuarioFirestore(usuarioId, firestore, auth));
+                        return;
+                    }
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot mensajeDoc : querySnapshot) {
+                        mensajeDoc.getReference().delete().addOnCompleteListener(task -> {
+                            if (deleteCounter.decrementAndGet() == 0) {
+                                firestore.collection("mensajes").document(usuarioId).delete().addOnCompleteListener(ignore -> eliminarUsuarioFirestore(usuarioId, firestore, auth));
+                            }
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    showMessage("Error al borrar historial de mensajes: " + e.getMessage());
+                    eliminarUsuarioFirestore(usuarioId, firestore, auth);
+                });
+    }
+
+    private void eliminarUsuarioFirestore(String usuarioId, FirebaseFirestore firestore, FirebaseAuth auth) {
+        firestore.collection("usuarios")
+                .document(usuarioId)
+                .delete()
+                .addOnSuccessListener(aVoid -> eliminarAuthUsuario(usuarioId, auth, pendingEliminarCuentaPassword))
+                .addOnFailureListener(e -> {
+                    showMessage("Error al eliminar usuario: " + e.getMessage());
+                    eliminarAuthUsuario(usuarioId, auth, pendingEliminarCuentaPassword);
+                });
+    }
+
+    private void eliminarAuthUsuario(String usuarioId, FirebaseAuth auth, String password) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser != null && usuarioId.equals(currentUser.getUid())) {
+            String email = currentUser.getEmail();
+            if (email != null && !password.isEmpty()) {
+                AuthCredential credential = EmailAuthProvider.getCredential(email, password);
+                currentUser.reauthenticate(credential)
+                        .addOnSuccessListener(ignore -> currentUser.delete()
+                                .addOnSuccessListener(aVoid -> mostrarMensajeConfirmacion())
+                                .addOnFailureListener(e -> {
+                                    showMessage("No se pudo eliminar la cuenta: " + e.getMessage());
+                                    cerrarSesionTrasEliminacion();
+                                }))
+                        .addOnFailureListener(e -> {
+                            showMessage("Reautenticación fallida: " + e.getMessage());
+                            cerrarSesionTrasEliminacion();
+                        });
+            } else {
+                currentUser.delete()
+                        .addOnSuccessListener(aVoid -> mostrarMensajeConfirmacion())
+                        .addOnFailureListener(e -> {
+                            showMessage("Los datos se eliminaron, pero la cuenta de autenticación requiere reautenticación: " + e.getMessage());
+                            cerrarSesionTrasEliminacion();
+                        });
+            }
+        } else {
+            cerrarSesionTrasEliminacion();
+        }
+    }
+
+    private void cerrarSesionTrasEliminacion() {
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putBoolean("guardarLogin", false)
+                .apply();
+        stopService(new Intent(this, ChatNotificationForegroundService.class));
+        FirebaseAuth.getInstance().signOut();
+        startActivity(new Intent(this, pantalla_inicio.class));
+        finishAffinity();
+    }
+
+    private void mostrarMensajeConfirmacion() {
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        container.setPadding(24, 24, 24, 24);
+
+        com.google.android.material.card.MaterialCardView card = new com.google.android.material.card.MaterialCardView(this);
+        card.setCardBackgroundColor(getResources().getColor(R.color.login_card_bg));
+        card.setCardElevation(8);
+        card.setRadius(16);
+
+        android.widget.LinearLayout content = new android.widget.LinearLayout(this);
+        content.setOrientation(android.widget.LinearLayout.VERTICAL);
+        content.setPadding(16, 16, 16, 16);
+
+        android.widget.TextView tvTitulo = new android.widget.TextView(this);
+        tvTitulo.setText("Eliminación completa");
+        tvTitulo.setTextSize(18);
+        tvTitulo.setTextColor(getResources().getColor(R.color.aura_text_primary));
+        tvTitulo.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.BOLD));
+        tvTitulo.setLayoutParams(new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        android.widget.TextView tvMensaje = new android.widget.TextView(this);
+        tvMensaje.setText("Tu cuenta y todos los datos vinculados se eliminaron de inmediato.\n\n" +
+                "✓ Chats eliminados\n" +
+                "✓ Vinculaciones eliminadas\n" +
+                "✓ Usuario eliminado\n" +
+                "✓ Para volver a usar Aura deberás registrarte nuevamente\n\n" +
+                "Se cerrará la sesión ahora.");
+        tvMensaje.setTextSize(13);
+        tvMensaje.setTextColor(getResources().getColor(R.color.aura_text_primary));
+        tvMensaje.setTypeface(android.graphics.Typeface.create("sans-serif-condensed", android.graphics.Typeface.NORMAL));
+        tvMensaje.setLineSpacing(6f, 1.0f);
+        android.widget.LinearLayout.LayoutParams msgParams = new android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
+        msgParams.setMargins(0, 16, 0, 0);
+        tvMensaje.setLayoutParams(msgParams);
+
+        content.addView(tvTitulo);
+        content.addView(tvMensaje);
+        card.addView(content);
+        container.addView(card);
+
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setView(container)
+                .setPositiveButton("Entendido", (dialog, which) -> {
+                    dialog.dismiss();
+                    cerrarSesionTrasEliminacion();
+                })
+                .setCancelable(false)
+                .show();
     }
 }

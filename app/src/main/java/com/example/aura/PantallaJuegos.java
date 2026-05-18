@@ -1470,6 +1470,7 @@ public class PantallaJuegos extends BaseActivity implements View.OnClickListener
 
         Map<String, Object> mensaje = new HashMap<>();
         mensaje.put("remitente", nombreExplorador != null ? nombreExplorador : "Explorador");
+        mensaje.put("remitenteId", exploradorUid);
         mensaje.put("contenido", contenido);
         mensaje.put("timestamp", FieldValue.serverTimestamp());
         mensaje.put("tipo", tipo);

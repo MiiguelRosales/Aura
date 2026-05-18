@@ -80,6 +80,8 @@ public class PantallaCompartirCodigo extends BaseActivity {
             finish();
         });
 
+        MaterialButton btnEliminarCuenta = findViewById(R.id.btnEliminarCuenta);
+        btnEliminarCuenta.setOnClickListener(v -> mostrarDialogoEliminarCuenta());
     }
 
     private void prepararCodigoExplorador(EditText etCodigoVincular, MaterialButton btnCompartir) {

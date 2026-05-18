@@ -20,6 +20,8 @@ import java.util.Map;
 public class AlarmReceiver extends BroadcastReceiver {
 
     private static final String TAG = "AlarmReceiver";
+    private static final String PREFS_NAME = "AuraPrefs";
+    private static final String KEY_CURRENT_UID = "currentUid";
     private static final String PREFS_JUEGO = "JuegoPrefs";
     private static final String KEY_LISTO_CONFIRMADO = "listo_confirmado_hoy";
 
@@ -31,20 +33,25 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "Alarma de medianoche recibida");
 
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        FirebaseUser user = auth.getCurrentUser();
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String candidateUid = prefs.getString(KEY_CURRENT_UID, null);
 
-        if (user == null) {
-            Log.w(TAG, "No hay usuario autenticado para enviar alerta");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            candidateUid = user.getUid();
+        }
+
+        if (candidateUid == null || candidateUid.trim().isEmpty()) {
+            Log.w(TAG, "No hay UID disponible para enviar alerta");
             return;
         }
 
-        String uid = user.getUid();
+        final String uid = candidateUid;
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
         // 1. Verificar si ya se confirmó hoy
-        SharedPreferences prefs = context.getSharedPreferences(obtenerPrefsJuegosNombre(uid), Context.MODE_PRIVATE);
-        String fechaConfirmado = prefs.getString(KEY_LISTO_CONFIRMADO, "");
+        SharedPreferences juegoPrefs = context.getSharedPreferences(obtenerPrefsJuegosNombre(uid), Context.MODE_PRIVATE);
+        String fechaConfirmado = juegoPrefs.getString(KEY_LISTO_CONFIRMADO, "");
         String hoy = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
         if (hoy.equals(fechaConfirmado)) {
